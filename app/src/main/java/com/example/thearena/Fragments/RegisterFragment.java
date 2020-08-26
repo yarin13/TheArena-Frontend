@@ -148,6 +148,10 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
             Toast.makeText(getContext(), "Illegal email", Toast.LENGTH_SHORT).show();
             return false;
         }
+        if (Integer.parseInt(age.getText().toString()) <= 18){
+            return false;
+
+        }
         if (maleRadioButton.isChecked())
             isMale = true;
         else

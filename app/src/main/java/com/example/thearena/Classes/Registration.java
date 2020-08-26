@@ -5,6 +5,7 @@ import android.widget.CheckBox;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 //-----------------------------                 This class is used to save all the registration data that the user fill in both register fragments      -----------------------
@@ -53,7 +54,7 @@ public class Registration {
         return age;
     }
 
-    public static void setAge(int age) { Registration.age = age;}
+    public static void setAge(int age) { Registration.age = age; }
 
 
     public static String getEmail() {

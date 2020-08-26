@@ -78,8 +78,8 @@
             android:id="@+id/register_age_textbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ems="10"
             android:hint="@string/age"
-            android:importantForAutofill="no"
             android:inputType="number" />
 
         <LinearLayout
