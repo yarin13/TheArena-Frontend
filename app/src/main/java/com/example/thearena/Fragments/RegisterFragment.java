@@ -1,6 +1,7 @@
 package com.example.thearena.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Registration;
 import com.example.thearena.R;
+import com.google.android.gms.tasks.Task;
 
 import java.util.regex.Pattern;
 
@@ -120,10 +122,10 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                 } else {
                     //firstPageValidation - function to check password is correct,what gender and who intrested in
                     // and if password is good save tha data from this page and load sec fragment
-                    if (firstPageValidation()) {
-                        Toast.makeText(getContext(), "Success", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getContext(), "Please check your input, Something in not right", Toast.LENGTH_LONG).show();
+                    try {
+                        firstPageValidation();
+                    }catch (Exception e){
+                        Log.d("Exception", "onClick - Error: "+e.getMessage());
                     }
                 }
                 break;
@@ -139,34 +141,28 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
         mainActivity.mainFragmentManager(new LoginPage());
     }
 
-    private boolean firstPageValidation() {
+    private void firstPageValidation() {
         if (!password.getText().toString().equals(verifyPassword.getText().toString())) {
             Toast.makeText(getContext(), "Verification password isn't correct", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
         if (!emailCheck()) {
             Toast.makeText(getContext(), "Illegal email", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
         if (Integer.parseInt(age.getText().toString()) <= 18){
-            return false;
+            return;
 
         }
-        if (maleRadioButton.isChecked())
-            isMale = true;
-        else
-            isMale = false;
-        if (intrestedInFemaleCheckBox.isChecked())
-            intrestedInWomen = true;
-        else
-            intrestedInWomen = false;
+        isMale = maleRadioButton.isChecked();
+        intrestedInWomen = intrestedInFemaleCheckBox.isChecked();
         Registration.saveFirstPageInfo(email.getText().toString(), firstName.getText().toString(), lastName.getText().toString(), phoneNumber.getText().toString(),
                 Integer.parseInt(age.getText().toString()), isMale, intrestedInWomen, password.getText().toString());
         // here move to questions register
         MainActivity mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         mainActivity.mainFragmentManager(new RegisterQuestionsFragment());
-        return true;
+
     }
 
     private boolean emailCheck() {

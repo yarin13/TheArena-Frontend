@@ -11,7 +11,5 @@ public class User {
     private int userAge;
     private String userGender;
     private String userIntrestedIn;
-//-----------------------------------------------------
-
 
 }

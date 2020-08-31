@@ -103,5 +103,25 @@ public class Authentication {
             Log.d("blank", "onClick: username or password is blank");
         }
     }
+
+    public static void logoff(final Context context, User userToLogoff, final IAsyncResponse callBack){
+        if (userToLogoff != null) {
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.LOGOFF_USER_URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    callBack.processFinished(response);
+                    //Toast.makeText(context,response,Toast.LENGTH_LONG).show();
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(context, "PROBLEM!!!!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            requestQueue.getCache().clear();
+            requestQueue.add(stringRequest);
+        }
+    }
 }
 

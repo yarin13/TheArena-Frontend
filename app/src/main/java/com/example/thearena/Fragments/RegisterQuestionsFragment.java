@@ -36,7 +36,6 @@ public class RegisterQuestionsFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private Button registerButton;
-    private Button backButton;
     private RecyclerView recyclerView;
     private RecyclerViewAdapter recyclerViewAdapter;
     private List<Question> questionList;
@@ -98,16 +97,7 @@ public class RegisterQuestionsFragment extends Fragment {
 
 
         registerButton = view.findViewById(R.id.questions_submit_button);
-        backButton = view.findViewById(R.id.questions_back_button);
 
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                MainActivity mainActivity = (MainActivity) getActivity();
-                assert mainActivity != null;
-                mainActivity.mainFragmentManager(new RegisterFragment());
-            }
-        });
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,7 +113,7 @@ public class RegisterQuestionsFragment extends Fragment {
                 Authentication.registerNewUser(getContext(), new IAsyncResponse() {
                     @Override
                     public <T> void processFinished(T response) {
-                        if (response.toString().equals("success")) {
+                        if(response.toString().equals("{\"Success\":\"New user is created!\"}")) {
 
                             //send success from server!!
                             Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), getActivity().getBaseContext());

@@ -38,10 +38,18 @@ public class Registration {
     }
 
 
+    public Registration() {
+    }
 
-
-    public static void register(){
-
+    public Registration(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean intrestedInWomen,String password){
+        setEmail(email);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setPhoneNumber(phoneNumber);
+        setAge(age);
+        seIstMale(male);
+        setIntrestedInWomen(intrestedInWomen);
+        setPassword(password);
     }
 
     public static int getScore() {

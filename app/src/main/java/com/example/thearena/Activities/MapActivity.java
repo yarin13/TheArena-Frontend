@@ -16,6 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Classes.User;
+import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -31,7 +34,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
-
+    private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
 
     private GoogleMap map;
@@ -39,12 +42,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private String provider;
     private Boolean LocationPermissionGranted;
+    private User currentUser;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -203,6 +208,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Authentication.logoff(this,currentUser,iAsyncResponse);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Authentication.logoff(this,currentUser,iAsyncResponse);
+    }
 }
 

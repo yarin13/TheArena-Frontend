@@ -93,8 +93,6 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
                     mainActivity.moveToMap();
-                } else {
-                    Toast.makeText(getContext(), "" + response.toString(), Toast.LENGTH_SHORT).show();
                 }
             }
         };
