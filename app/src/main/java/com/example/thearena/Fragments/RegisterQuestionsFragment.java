@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -87,6 +88,11 @@ public class RegisterQuestionsFragment extends Fragment {
 
         questionList = new QuestionsGetterFromServer(getContext()).getQuestions(new IAsyncResponse() {
             @Override
+            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
+
+            }
+
+            @Override
             public <T> void processFinished(T questionList) {
                 recyclerViewAdapter = new RecyclerViewAdapter(getContext(), (List<Question>) questionList);
                 recyclerView.setAdapter(recyclerViewAdapter);
@@ -111,6 +117,11 @@ public class RegisterQuestionsFragment extends Fragment {
                 //------------------------------------------------------create new User------------------------------------------
 
                 Authentication.registerNewUser(getContext(), new IAsyncResponse() {
+                    @Override
+                    public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
+
+                    }
+
                     @Override
                     public <T> void processFinished(T response) {
                         if(response.toString().equals("{\"Success\":\"New user is created!\"}")) {

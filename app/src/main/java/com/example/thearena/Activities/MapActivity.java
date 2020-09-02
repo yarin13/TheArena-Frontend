@@ -1,26 +1,36 @@
 package com.example.thearena.Activities;
 
 import android.Manifest;
+import android.app.Application;
+import android.app.IntentService;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.HandlerCompat;
 
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
+import com.example.thearena.Utils.Preferences;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -29,9 +39,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private IAsyncResponse iAsyncResponse;
@@ -39,10 +55,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationClient;
-    private LocationManager locationManager;
-    private String provider;
     private Boolean LocationPermissionGranted;
-    private User currentUser;
+    private String currentUserEmail;
 
 
     @Override
@@ -51,12 +65,45 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
+        String provider = locationManager.getBestProvider(criteria, false);
         getLocationPermission();
 
+        currentUserEmail = Preferences.getMail(MapActivity.this);
 
+        iAsyncResponse = new IAsyncResponse() {
+            @Override
+            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
+
+            }
+
+            @Override
+            public <T> void processFinished(T response) {
+                //TODO: add map marker...
+            }
+        };
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                    Authentication.sendLocation(MapActivity.this,currentUserEmail,lastCurrentLocation,null);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                for (; ; ) {
+                    try {
+                        Thread.sleep(60000);
+                        Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation,iAsyncResponse);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     private void getLocationPermission() {
@@ -155,41 +202,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(@NonNull Location location) {
         onMapReady(map);
-    }
-
-    /*
-    private void getDeviceLocation() {
-//    this function is getting the device location
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        try {
-            if (LocationPermissionGranted) {
-                Task location = fusedLocationClient.getLastLocation();
-                location.addOnCompleteListener(new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult() != null) {
-                                Location currentLocation = (Location) task.getResult();
-                                moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
-                                        Constants.DEFAULT_ZOOM);
-                                Toast.makeText(getSupportFragmentManager().findFragmentById(R.id.MapId).getActivity(), "location: " + currentLocation.getLatitude(), Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(getSupportFragmentManager().findFragmentById(R.id.MapId).getActivity(), "Unable to get current location", Toast.LENGTH_SHORT).show();
-                            }
-                        } else
-                            Toast.makeText(getSupportFragmentManager().findFragmentById(R.id.MapId).getActivity(), "Unable to get current location", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        } catch (SecurityException e) {
-            Log.d("getDeviceLocation function", "getDeviceLocation: " + e.getMessage());
-        }
 
     }
-    */
 
-    private void getDeviceLocation() {
+    private void  getDeviceLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -199,9 +215,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onSuccess(Location location) {
                         if (location != null) {
                             lastCurrentLocation = location;
-                            moveCamera(new LatLng(location.getLatitude(), lastCurrentLocation.getLongitude()),Constants.DEFAULT_ZOOM);
-                        }
-                        else {
+                            moveCamera(new LatLng(location.getLatitude(), lastCurrentLocation.getLongitude()), Constants.DEFAULT_ZOOM);
+                        } else {
                             Toast.makeText(MapActivity.this, "Unable to get current location", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -209,20 +224,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Authentication.logoff(this,currentUser,iAsyncResponse);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
     protected void onStop() {
+        new Runnable() {
+            @Override
+            public void run() {
+                Authentication.logoff(MapActivity.this, currentUserEmail);
+            }
+        }.run();
         super.onStop();
-        Authentication.logoff(this,currentUser,iAsyncResponse);
     }
 }
 

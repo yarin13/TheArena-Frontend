@@ -150,7 +150,8 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
             Toast.makeText(getContext(), "Illegal email", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (Integer.parseInt(age.getText().toString()) <= 18){
+        if (Integer.parseInt(age.getText().toString()) < 18){
+            Toast.makeText(getContext(), "You are too young", Toast.LENGTH_SHORT).show();
             return;
 
         }

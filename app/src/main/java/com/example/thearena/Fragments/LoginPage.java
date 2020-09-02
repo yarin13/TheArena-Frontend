@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.thearena.Activities.MainActivity;
@@ -15,6 +16,8 @@ import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Preferences;
+
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,17 +90,21 @@ public class LoginPage extends Fragment implements View.OnClickListener {
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T response) {
-
+            public <T> void processFinished(T response, @Nullable String mail, @Nullable String pass) {
                 if (response.equals("success")) {
+                    Preferences.saveMailAndPassword(mail,pass, Objects.requireNonNull(getContext()));
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
                     mainActivity.moveToMap();
                 }
             }
+
+            @Override
+            public <T> void processFinished(T response) {
+            }
         };
 
-        if (sharedMail != null || sharedPassword != null)
+        if (!sharedMail.equals("") || !sharedPassword.equals(""))
             Authentication.signIn(sharedMail, sharedPassword, getContext(), iAsyncResponse);
         return v;
     }
@@ -107,14 +114,28 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.login_singIn_button:
-                if (userName.getText().toString() != null && password.getText().toString() != null) {
-                    Authentication.signIn(userName.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
+                String email = userName.getText().toString();
+                String pass = password.getText().toString();
+                if (!email.equals("") && !pass.equals("")) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Authentication.signIn(userName.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
+                        }
+                    }).start();
+                }else{
+                    Toast.makeText(getContext(),"Hmm...Something is missing...",Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.login_register_buttom:
-                MainActivity mainActivity = (MainActivity) getActivity();
-                assert mainActivity != null;
-                mainActivity.mainFragmentManager(new RegisterFragment());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        assert mainActivity != null;
+                        mainActivity.mainFragmentManager(new RegisterFragment());
+                    }
+                }).start();
                 break;
         }
     }
