@@ -1,20 +1,13 @@
 package com.example.thearena.Activities;
 
 import android.Manifest;
-import android.app.Application;
-import android.app.IntentService;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.os.HandlerCompat;
 
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
@@ -32,22 +24,18 @@ import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Preferences;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
     private IAsyncResponse iAsyncResponse;
@@ -80,19 +68,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             @Override
             public <T> void processFinished(T response) {
-                //TODO: add map marker...
+                ArrayList<User> userArrayList = new ArrayList<User>();
+                userArrayList.add((User) response);
+                //TODO: write a for loop that iterate the ArrayList and return a markers to the map instated of the code below.
+                LatLng sydney = new LatLng(37.4219984, -122.0845);
+                map.addMarker(new MarkerOptions()
+                        .position(sydney)
+                        .title("New user"));
+                map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
             }
         };
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(2000);
-                    Authentication.sendLocation(MapActivity.this,currentUserEmail,lastCurrentLocation,null);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
                 for (; ; ) {
                     try {
@@ -169,8 +158,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     // to make the map look on the current location
-    private void moveCamera(LatLng latLng, float zoom) {
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+    private void moveCamera(LatLng latLng) {
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, Constants.DEFAULT_ZOOM));
     }
 
     /// this function is using a built in function ("getMapAsync()") that calls to "onMapReady" function when the map is ready
@@ -192,6 +181,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return;
             }
             map.setMyLocationEnabled(true);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null);
+                }
+            }).start();
 
         } else {
             getLocationPermission();
@@ -215,7 +210,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onSuccess(Location location) {
                         if (location != null) {
                             lastCurrentLocation = location;
-                            moveCamera(new LatLng(location.getLatitude(), lastCurrentLocation.getLongitude()), Constants.DEFAULT_ZOOM);
+                            moveCamera(new LatLng(location.getLatitude(), lastCurrentLocation.getLongitude()));
                         } else {
                             Toast.makeText(MapActivity.this, "Unable to get current location", Toast.LENGTH_SHORT).show();
                         }

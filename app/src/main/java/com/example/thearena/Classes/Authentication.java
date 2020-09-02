@@ -139,13 +139,13 @@ public class Authentication {
     }
 
 
-    public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, @Nullable IAsyncResponse iAsyncResponse) {
+    public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, @Nullable final IAsyncResponse iAsyncResponse) {
         requestQueue = Volley.newRequestQueue(context);
         if (!currentUserEmail.equals("")) {
             StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.ONLINE_USER_LOCATION, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-
+                    iAsyncResponse.processFinished(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
