@@ -36,10 +36,8 @@ public class RegisterQuestionsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private Button registerButton;
     private RecyclerView recyclerView;
     private RecyclerViewAdapter recyclerViewAdapter;
-    private List<Question> questionList;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -82,7 +80,7 @@ public class RegisterQuestionsFragment extends Fragment {
         recyclerView = view.findViewById(R.id.questions_recyclerview);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        questionList = new ArrayList<>();
+        List<Question> questionList = new ArrayList<>();
 
         // only when the answer from the server returns, send the data to the adapter;
 
@@ -102,7 +100,7 @@ public class RegisterQuestionsFragment extends Fragment {
         });
 
 
-        registerButton = view.findViewById(R.id.questions_submit_button);
+        Button registerButton = view.findViewById(R.id.questions_submit_button);
 
 
         registerButton.setOnClickListener(new View.OnClickListener() {

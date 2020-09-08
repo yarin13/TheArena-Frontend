@@ -1,7 +1,6 @@
 package com.example.thearena.Classes;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,18 +16,13 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.thearena.Activities.MainActivity;
-import com.example.thearena.Activities.MapActivity;
-import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Utils.Constants;
-import com.example.thearena.Utils.Preferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -86,7 +80,7 @@ public class Authentication {
                     JSONArray key = response.names();
                     try {
                         assert key != null;
-                        callBack.processFinished(response.getString(key.getString(0)),username,password);
+                        callBack.processFinished(response.getString(key.getString(0)), username, password);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -111,20 +105,20 @@ public class Authentication {
         }
     }
 
-    public static void logoff(final Context context, final String userToLogoff){
+    public static void logoff(final Context context, final String userToLogoff) {
         requestQueue = Volley.newRequestQueue(context);
         if (userToLogoff != null) {
             StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.ONLINE_USER_LOCATION, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-                    Log.d("logoff", "onResponse: "+response);
+                    Log.d("logoff", "onResponse: " + response);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.d("logoff problem", ""+error);
+                    Log.d("logoff problem", "" + error);
                 }
-            }){
+            }) {
                 @Override
                 protected Map<String, String> getParams() {
                     LinkedHashMap<String, String> params = new LinkedHashMap<>();
@@ -159,11 +153,29 @@ public class Authentication {
                     LinkedHashMap<String, String> params = new LinkedHashMap<>();
                     params.put("lat", String.valueOf(lastCurrentLocation.getLatitude()));
                     params.put("lng", String.valueOf(lastCurrentLocation.getLongitude()));
-                    params.put("mail",currentUserEmail);
+                    params.put("mail", currentUserEmail);
                     return params;
                 }
             };
             requestQueue.add(stringRequest);
+        }
+    }
+
+    public static void sendPasswordResetRequest(final Context context, final String currentUserEmail, final String newPassword, final IAsyncResponse iAsyncResponse) {
+        requestQueue = Volley.newRequestQueue(context);
+        if (!currentUserEmail.equals("")) {
+            StringRequest request = new StringRequest(Request.Method.PUT, Constants.AUTH_URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    iAsyncResponse.processFinished(response);
+                }
+            },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Could not reset your password, Please try again later.", Toast.LENGTH_LONG).show();
+                        }
+                    });
         }
     }
 }

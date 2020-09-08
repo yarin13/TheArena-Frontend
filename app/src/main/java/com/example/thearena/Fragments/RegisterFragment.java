@@ -171,7 +171,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public boolean isValid(String email) {
+    public static boolean isValid(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\." +
                 "[a-zA-Z0-9_+&*-]+)*@" +
                 "(?:[a-zA-Z0-9-]+\\.)+[a-z" +

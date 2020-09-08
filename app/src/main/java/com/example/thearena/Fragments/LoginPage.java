@@ -80,12 +80,14 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         userName = v.findViewById(R.id.login_username_textbox);
         password = v.findViewById(R.id.login_password_textbox);
         Button signin = v.findViewById(R.id.login_singIn_button);
-        Button register = v.findViewById(R.id.login_register_buttom);
+        Button register = v.findViewById(R.id.login_register_button);
+        Button resetPassword = v.findViewById(R.id.login_passwordReset_button);
 
+        resetPassword.setOnClickListener(this);
         signin.setOnClickListener(this);
         register.setOnClickListener(this);
 
-        String sharedMail = Preferences.getMail(getContext());
+        String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
         String sharedPassword = Preferences.getPassword(getContext());
 
         iAsyncResponse = new IAsyncResponse() {
@@ -127,7 +129,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                     Toast.makeText(getContext(),"Hmm...Something is missing...",Toast.LENGTH_LONG).show();
                 }
                 break;
-            case R.id.login_register_buttom:
+            case R.id.login_register_button:
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -136,6 +138,11 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                         mainActivity.mainFragmentManager(new RegisterFragment());
                     }
                 }).start();
+                break;
+            case R.id.login_passwordReset_button:
+                MainActivity mainActivity = (MainActivity) getActivity();
+                assert mainActivity != null;
+                mainActivity.mainFragmentManager(new PasswordResetFragment());
                 break;
         }
     }

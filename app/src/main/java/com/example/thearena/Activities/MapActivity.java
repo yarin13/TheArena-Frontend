@@ -41,6 +41,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
 
+    private ArrayList<User> userArrayList = new ArrayList<User>();
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
@@ -68,14 +69,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             @Override
             public <T> void processFinished(T response) {
-                ArrayList<User> userArrayList = new ArrayList<User>();
+                userArrayList.clear();
                 userArrayList.add((User) response);
-                //TODO: write a for loop that iterate the ArrayList and return a markers to the map instated of the code below.
-                LatLng sydney = new LatLng(37.4219984, -122.0845);
-                map.addMarker(new MarkerOptions()
-                        .position(sydney)
-                        .title("New user"));
-                map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+                for (User user : userArrayList){
+                    map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
+                }
             }
         };
 
@@ -118,7 +117,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         /*
               this function called by google activity(its a google's listener) after the user answers the prompt
               we recognize if its coming from the prompt if the "requestCode" variable equals to "Constants.LOCATION_PERMISSION_REQUEST_CODE" from earlier
-              we are looping the "grantResault" array to check if all the permissions we asked are granted
+              we are looping the "grantResult" array to check if all the permissions we asked are granted
               we initialize the map if we have all the permissions
         */
         if (requestCode == Constants.LOCATION_PERMISSION_REQUEST_CODE) {
