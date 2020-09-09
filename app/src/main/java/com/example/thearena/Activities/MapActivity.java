@@ -46,13 +46,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
     private String currentUserEmail;
+    private Boolean isLoggedIn;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
+        isLoggedIn = true;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -63,29 +64,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
-
-            }
+            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {}
 
             @Override
             public <T> void processFinished(T response) {
                 userArrayList.clear();
-                userArrayList.add((User) response);
+                if (response != null){
+                    userArrayList.add((User) response);
+                    for (User user : userArrayList){
+                        map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
+                    }
+                }else
+                    Toast.makeText(MapActivity.this,"look like there in no one here",Toast.LENGTH_LONG).show();
 
-                for (User user : userArrayList){
-                    map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
-                }
             }
         };
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-
                 for (; ; ) {
                     try {
-                        Thread.sleep(60000);
-                        Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation,iAsyncResponse);
+                        if (isLoggedIn){
+                            Thread.sleep(60000);
+                            Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation,iAsyncResponse);
+                        }
+                        else
+                            break;
+
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -122,22 +128,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         */
         if (requestCode == Constants.LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0) {
-                for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                for (int grantResult : grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
                         LocationPermissionGranted = false;
                         return;
                     }
                 }
                 LocationPermissionGranted = true;
 
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
                 fusedLocationClient.getLastLocation()
@@ -222,6 +222,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         new Runnable() {
             @Override
             public void run() {
+                isLoggedIn = false;
                 Authentication.logoff(MapActivity.this, currentUserEmail);
             }
         }.run();

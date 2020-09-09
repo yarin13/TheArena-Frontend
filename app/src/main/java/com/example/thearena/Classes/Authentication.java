@@ -15,7 +15,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Utils.Constants;
 
@@ -23,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -47,19 +47,27 @@ public class Authentication {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                LinkedHashMap<String, String> params = new LinkedHashMap<>();
-                params.put("userEmail", Registration.getEmail().trim());
-                params.put("userFirstName", Registration.getFirstName().trim());
-                params.put("userLastName", Registration.getLastName().trim());
-                params.put("userPhoneNumber", Registration.getPhoneNumber().trim());
-                params.put("userAge", String.valueOf(Registration.getAge()).trim());
-                params.put("userGender", Registration.getIsMale().trim());
-                params.put("userIntrestedIn", Registration.getIntrestedInWomen().trim());
-                params.put("userScore", String.valueOf(Registration.getScore()).trim());
-                params.put("userPassword", Registration.getPassword().trim());
+            public byte[] getBody() {
+                JSONObject params = new JSONObject();
+                try {
+                    params.put("userEmail", Registration.getEmail().trim());
+                    params.put("userFirstName", Registration.getFirstName().trim());
+                    params.put("userLastName", Registration.getLastName().trim());
+                    params.put("userPhoneNumber", Registration.getPhoneNumber().trim());
+                    params.put("userAge", String.valueOf(Registration.getAge()).trim());
+                    params.put("userGender", Registration.getIsMale().trim());
+                    params.put("userIntrestedIn", Registration.getIntrestedInWomen().trim());
+                    params.put("userScore", String.valueOf(Registration.getScore()).trim());
+                    params.put("userPassword", Registration.getPassword().trim());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return params.toString().getBytes();
+            }
 
-                return params;
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
             }
         };
 
@@ -92,12 +100,20 @@ public class Authentication {
                 }
             }) {
                 @Override
-                public Map<String, String> getHeaders() {
-                    LinkedHashMap<String, String> params = new LinkedHashMap<>();
-                    params.put("email", username);
-                    params.put("password", password);
+                public byte[] getBody() {
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("email",username);
+                        body.put("password",password);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return body.toString().getBytes();
+                }
 
-                    return params;
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
                 }
 
             };
@@ -120,10 +136,19 @@ public class Authentication {
                 }
             }) {
                 @Override
-                protected Map<String, String> getParams() {
-                    LinkedHashMap<String, String> params = new LinkedHashMap<>();
-                    params.put("email", userToLogoff);
-                    return params;
+                public byte[] getBody() {
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("email",userToLogoff);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return body.toString().getBytes();
+                }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
                 }
             };
 
@@ -139,6 +164,7 @@ public class Authentication {
             StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.ONLINE_USER_LOCATION, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
+                    assert iAsyncResponse != null;
                     iAsyncResponse.processFinished(response);
                 }
             }, new Response.ErrorListener() {
@@ -146,15 +172,23 @@ public class Authentication {
                 public void onErrorResponse(VolleyError error) {
                     Log.d("sendLocation - Error", "onErrorResponse: " + error.getMessage());
                 }
-            }
-            ) {
+            }) {
                 @Override
-                public Map<String, String> getHeaders() {
-                    LinkedHashMap<String, String> params = new LinkedHashMap<>();
-                    params.put("lat", String.valueOf(lastCurrentLocation.getLatitude()));
-                    params.put("lng", String.valueOf(lastCurrentLocation.getLongitude()));
-                    params.put("mail", currentUserEmail);
-                    return params;
+                public byte[] getBody() {
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("lat",lastCurrentLocation.getLatitude());
+                        body.put("lng",lastCurrentLocation.getLongitude());
+                        body.put("email",currentUserEmail);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return body.toString().getBytes();
+                }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
                 }
             };
             requestQueue.add(stringRequest);
@@ -169,13 +203,31 @@ public class Authentication {
                 public void onResponse(String response) {
                     iAsyncResponse.processFinished(response);
                 }
-            },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(context, "Could not reset your password, Please try again later.", Toast.LENGTH_LONG).show();
-                        }
-                    });
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(context, "Could not reset your password, Please try again later.", Toast.LENGTH_LONG).show();
+                }
+            }){
+                @Override
+                public byte[] getBody() {
+                    JSONObject body = new JSONObject();
+                    try {
+                        body.put("email",currentUserEmail);
+                        body.put("newPassword",newPassword);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    return body.toString().getBytes();
+                }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+            };
+            requestQueue.getCache().clear();
+            requestQueue.add(request);
         }
     }
 }

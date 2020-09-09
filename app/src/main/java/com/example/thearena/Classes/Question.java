@@ -45,7 +45,7 @@ public class Question {
     }
 
     public String getFirstAnswer() {
-        if(firstAnswer == "null")
+        if(firstAnswer.equals("null"))
             return null;
         return firstAnswer;
     }
@@ -55,7 +55,7 @@ public class Question {
     }
 
     public String getSecondAnswer() {
-        if(secondAnswer == "null")
+        if(secondAnswer.equals("null"))
             return null;
         return secondAnswer;
     }
@@ -65,7 +65,7 @@ public class Question {
     }
 
     public String getThirdAnswer() {
-        if(thirdAnswer == "null")
+        if(thirdAnswer.equals("null"))
             return null;
         return thirdAnswer;
     }
@@ -75,7 +75,7 @@ public class Question {
     }
 
     public String getFourthAnswer() {
-        if(fourthAnswer == "null")
+        if(fourthAnswer.equals("null"))
             return null;
         return fourthAnswer;
     }
