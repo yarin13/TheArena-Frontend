@@ -41,6 +41,8 @@
         android:layout_weight="1">
 
         <Button
+            android:drawableEnd="@drawable/ic_send"
+            android:drawablePadding="6dp"
             android:id="@+id/questions_submit_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

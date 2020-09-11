@@ -3,11 +3,7 @@ package com.example.thearena.Classes;
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -15,215 +11,142 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.thearena.Interfaces.AuthenticationServices;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Utils.Constants;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import retrofit2.Call;
 
 public class Authentication {
 
-
-    private static RequestQueue requestQueue;
-
+    public static HashMap<String,String> map = new HashMap<>();
 
     public static void registerNewUser(final Context context, final IAsyncResponse callBack) {
-        requestQueue = Volley.newRequestQueue(context);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.AUTH_URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                callBack.processFinished(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "No Connection", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            public byte[] getBody() {
-                JSONObject params = new JSONObject();
-                try {
-                    params.put("userEmail", Registration.getEmail().trim());
-                    params.put("userFirstName", Registration.getFirstName().trim());
-                    params.put("userLastName", Registration.getLastName().trim());
-                    params.put("userPhoneNumber", Registration.getPhoneNumber().trim());
-                    params.put("userAge", String.valueOf(Registration.getAge()).trim());
-                    params.put("userGender", Registration.getIsMale().trim());
-                    params.put("userIntrestedIn", Registration.getIntrestedInWomen().trim());
-                    params.put("userScore", String.valueOf(Registration.getScore()).trim());
-                    params.put("userPassword", Registration.getPassword().trim());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return params.toString().getBytes();
-            }
+        map.clear();
+        map.put("userEmail", Registration.getEmail().trim());
+        map.put("userFirstName", Registration.getFirstName().trim());
+        map.put("userLastName", Registration.getLastName().trim());
+        map.put("userPhoneNumber", Registration.getPhoneNumber().trim());
+        map.put("userAge", String.valueOf(Registration.getAge()).trim());
+        map.put("userGender", Registration.getIsMale().trim());
+        map.put("userIntrestedIn", Registration.getIntrestedInWomen().trim());
+        map.put("userScore", String.valueOf(Registration.getScore()).trim());
+        map.put("userPassword", Registration.getPassword().trim());
 
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-        };
+        requestManager(context,Constants.AUTH_URL, Request.Method.POST,callBack,map);
 
-        requestQueue.getCache().clear();
-        requestQueue.add(stringRequest);
     }
 
 
-    public static void signIn(final String username, final String password, final Context context, final IAsyncResponse callBack) {
-        requestQueue = Volley.newRequestQueue(context);
+    public static void signIn(final String email, final String password, final Context context, final IAsyncResponse callBack) {
 
-        if (!username.equals("") && !password.equals("")) {
+        map.clear();
+        map.put("email",email);
+        map.put("password",password);
+        requestManager(context,Constants.AUTH_URL, Request.Method.GET,callBack,map);
 
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, Constants.AUTH_URL, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-
-                    JSONArray key = response.names();
-                    try {
-                        assert key != null;
-                        callBack.processFinished(response.getString(key.getString(0)), username, password);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("signIn - Error", "onErrorResponse: " + error.getMessage());
-                }
-            }) {
-                @Override
-                public byte[] getBody() {
-                    JSONObject body = new JSONObject();
-                    try {
-                        body.put("email",username);
-                        body.put("password",password);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    return body.toString().getBytes();
-                }
-
-                @Override
-                public String getBodyContentType() {
-                    return "application/json";
-                }
-
-            };
-            requestQueue.add(jsonObjectRequest);
-        }
     }
 
     public static void logoff(final Context context, final String userToLogoff) {
-        requestQueue = Volley.newRequestQueue(context);
-        if (userToLogoff != null) {
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, Constants.ONLINE_USER_LOCATION, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.d("logoff", "onResponse: " + response);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("logoff problem", "" + error);
-                }
-            }) {
-                @Override
-                public byte[] getBody() {
-                    JSONObject body = new JSONObject();
-                    try {
-                        body.put("email",userToLogoff);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    return body.toString().getBytes();
-                }
+        map.clear();
+        map.put("email",userToLogoff);
+        requestManager(context,Constants.ONLINE_USER_LOCATION, Request.Method.POST,null,map);
 
-                @Override
-                public String getBodyContentType() {
-                    return "application/json";
-                }
-            };
-
-            requestQueue.getCache().clear();
-            requestQueue.add(stringRequest);
-        }
     }
 
 
-    public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, @Nullable final IAsyncResponse iAsyncResponse) {
-        requestQueue = Volley.newRequestQueue(context);
-        if (!currentUserEmail.equals("")) {
-            StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.ONLINE_USER_LOCATION, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    assert iAsyncResponse != null;
-                    iAsyncResponse.processFinished(response);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("sendLocation - Error", "onErrorResponse: " + error.getMessage());
-                }
-            }) {
-                @Override
-                public byte[] getBody() {
-                    JSONObject body = new JSONObject();
-                    try {
-                        body.put("lat",lastCurrentLocation.getLatitude());
-                        body.put("lng",lastCurrentLocation.getLongitude());
-                        body.put("email",currentUserEmail);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    return body.toString().getBytes();
-                }
+    public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, final IAsyncResponse iAsyncResponse) {
+        map.clear();
+        map.put("lat",String.valueOf(lastCurrentLocation.getLatitude()));
+        map.put("lng",String.valueOf(lastCurrentLocation.getLongitude()));
+        map.put("email",currentUserEmail);
 
-                @Override
-                public String getBodyContentType() {
-                    return "application/json";
-                }
-            };
-            requestQueue.add(stringRequest);
-        }
+        requestManager(context,Constants.ONLINE_USER_LOCATION, Request.Method.GET,iAsyncResponse,map);
+
     }
 
     public static void sendPasswordResetRequest(final Context context, final String currentUserEmail, final String newPassword, final IAsyncResponse iAsyncResponse) {
-        requestQueue = Volley.newRequestQueue(context);
-        if (!currentUserEmail.equals("")) {
-            StringRequest request = new StringRequest(Request.Method.PUT, Constants.AUTH_URL, new Response.Listener<String>() {
+        map.clear();
+        map.put("email",currentUserEmail);
+        map.put("newPassword",newPassword);
+        requestManager(context, Constants.AUTH_URL, Request.Method.PUT, iAsyncResponse,map);
+
+    }
+
+
+    public static void requestManager(final Context context, final String uri, final Integer method, final IAsyncResponse callback, final HashMap<String,String> paramsToBody){
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+
+        if (paramsToBody.size() != 0){
+            JsonObjectRequest request = new JsonObjectRequest(method, uri, null, new Response.Listener<JSONObject>() {
                 @Override
-                public void onResponse(String response) {
-                    iAsyncResponse.processFinished(response);
+                public void onResponse(JSONObject response) {
+                    if (response == null){
+                        return;
+                    }
+                    callback.processFinished(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, "Could not reset your password, Please try again later.", Toast.LENGTH_LONG).show();
+                    Log.d("Error", "onErrorResponse: "+error);
                 }
             }){
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+
                 @Override
                 public byte[] getBody() {
                     JSONObject body = new JSONObject();
                     try {
-                        body.put("email",currentUserEmail);
-                        body.put("newPassword",newPassword);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        if (uri.equals(Constants.AUTH_URL)){
+                            switch (method){
+                                case Method.GET:
+                                    body.put("email",paramsToBody.get("email"));
+                                    body.put("password",paramsToBody.get("password"));
+                                    break;
+                                case Method.POST:
+                                    body.put("email", paramsToBody.get("userEmail"));
+                                    body.put("firstName", paramsToBody.get("userFirstName"));
+                                    body.put("lastName", paramsToBody.get("userLastName"));
+                                    body.put("phoneNumber", paramsToBody.get("userPhoneNumber"));
+                                    body.put("age", String.valueOf(paramsToBody.get("userAge")));
+                                    body.put("gender", paramsToBody.get("userGender"));
+                                    body.put("intrestedIn", paramsToBody.get("userIntrestedIn"));
+                                    body.put("score", String.valueOf(paramsToBody.get("userScore")));
+                                    body.put("password", paramsToBody.get("userPassword"));
+                                    break;
+                                case Method.PUT:
+                                    body.put("email",paramsToBody.get("email"));
+                                    body.put("newPassword",paramsToBody.get("newPassword"));
+                                    break;
+                            }
+                            return body.toString().getBytes();
+                        } else if (uri.equals(Constants.ONLINE_USER_LOCATION)){
+                            switch (method){
+                                case Method.GET:
+                                    body.put("lat",paramsToBody.get("lat"));
+                                    body.put("lng",paramsToBody.get("lng"));
+                                    body.put("email",paramsToBody.get("email"));
+                                    break;
+                                case Method.POST:
+                                    body.put("email",paramsToBody.get("email"));
+                                    break;
+                            }
+                                return body.toString().getBytes();
+                            }
+                    }catch (Exception e){
+                        Log.d("GET-BODY ERROR!", "getBody: "+e.getMessage());
                     }
-                    return body.toString().getBytes();
-                }
+                    return "".getBytes();
 
-                @Override
-                public String getBodyContentType() {
-                    return "application/json";
                 }
             };
             requestQueue.getCache().clear();
@@ -231,4 +154,3 @@ public class Authentication {
         }
     }
 }
-

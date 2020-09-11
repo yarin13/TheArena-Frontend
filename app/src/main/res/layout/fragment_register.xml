@@ -189,11 +189,13 @@
         app:layout_constraintTop_toBottomOf="@+id/register_title_textview" />
 
     <Button
+        android:drawableEnd="@drawable/ic_next"
         android:id="@+id/register_next_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/next"
+        android:background="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.829"
@@ -202,11 +204,13 @@
         app:layout_constraintVertical_bias="0.53" />
 
     <Button
+        android:drawableStart="@drawable/ic_back"
         android:id="@+id/register_back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:text="@string/back"
+        android:background="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/register_next_button"
         app:layout_constraintHorizontal_bias="0.311"

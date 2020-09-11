@@ -31,7 +31,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private TextView userName;
+    private TextView userEmail;
     private TextView password;
 
     private IAsyncResponse iAsyncResponse;
@@ -77,14 +77,14 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login_page, container, false);
-        userName = v.findViewById(R.id.login_username_textbox);
+        userEmail = v.findViewById(R.id.login_userEmail_textbox);
         password = v.findViewById(R.id.login_password_textbox);
-        Button signin = v.findViewById(R.id.login_singIn_button);
+        Button signIn = v.findViewById(R.id.login_singIn_button);
         Button register = v.findViewById(R.id.login_register_button);
         Button resetPassword = v.findViewById(R.id.login_passwordReset_button);
 
         resetPassword.setOnClickListener(this);
-        signin.setOnClickListener(this);
+        signIn.setOnClickListener(this);
         register.setOnClickListener(this);
 
         String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
@@ -116,13 +116,13 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.login_singIn_button:
-                String email = userName.getText().toString();
+                String email = userEmail.getText().toString();
                 String pass = password.getText().toString();
                 if (!email.equals("") && !pass.equals("")) {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            Authentication.signIn(userName.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
+                            Authentication.signIn(userEmail.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
                         }
                     }).start();
                 }else{

@@ -146,7 +146,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             public void onSuccess(Location location) {
                                 // Got last known location. In some rare situations this can be null.
                                 if (location != null) {
-                                    Log.d("latlon", "Last known location in lon: " + location.getLongitude() + ", lat: " + location.getLatitude());
+                                    Log.d("latlng", "Last known location in lon: " + location.getLongitude() + ", lat: " + location.getLatitude());
                                 }
                             }
                         });

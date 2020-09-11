@@ -35,16 +35,20 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <AutoCompleteTextView
+            android:drawableStart="@drawable/ic_email"
+            android:drawablePadding="8dp"
             android:maxLines="1"
-            android:id="@+id/login_username_textbox"
+            android:id="@+id/login_userEmail_textbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="@string/enter_a_user_name"
+            android:hint="@string/enter_your_email"
             android:inputType="textPersonName"
             android:autofillHints="" />
 
         <EditText
+            android:drawableStart="@drawable/ic_lock"
+            android:drawablePadding="8dp"
             android:id="@+id/login_password_textbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
