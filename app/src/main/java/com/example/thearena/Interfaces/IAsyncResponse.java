@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 //---------------------------------- Used to make sure commands being processed Asynchronously-------------------------------------
 public interface IAsyncResponse {
 
-     <T> void processFinished(T questionList, @Nullable String mail,@Nullable String pass);
+    <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass);
 
-     <T> void processFinished(T response);
+    <T> void processFinished(T response);
 }

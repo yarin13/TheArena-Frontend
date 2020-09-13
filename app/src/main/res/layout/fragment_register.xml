@@ -140,14 +140,14 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
 
-                <CheckBox
+                <RadioButton
                     android:id="@+id/register_interested_male_chkbox"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:text="@string/male" />
 
-                <CheckBox
+                <RadioButton
                     android:id="@+id/register_interested_female_chkbox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

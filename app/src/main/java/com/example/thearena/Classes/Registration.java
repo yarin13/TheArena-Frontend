@@ -107,9 +107,9 @@ public class Registration {
 
     public static String getIntrestedInWomen(){
         if(intrestedInWomen)
-            return "Women";
+            return "Female";
         else
-            return "Man";
+            return "Male";
     }
 
     public static void setIntrestedInWomen(boolean intrestedInWomen) {

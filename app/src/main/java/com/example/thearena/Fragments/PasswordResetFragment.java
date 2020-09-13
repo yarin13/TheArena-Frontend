@@ -82,10 +82,12 @@ public class PasswordResetFragment extends Fragment implements View.OnClickListe
 
             @Override
             public <T> void processFinished(T response) {
-                Preferences.saveMailAndPassword(email.getText().toString(),passwordOne.getText().toString(), Objects.requireNonNull(getContext()));
-                MainActivity mainActivity = (MainActivity) getActivity();
-                assert mainActivity != null;
-                mainActivity.mainFragmentManager(new LoginPage());
+                if (response.equals("success")) {
+                    Preferences.saveMailAndPassword(email.getText().toString(), passwordOne.getText().toString(), Objects.requireNonNull(getContext()));
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    assert mainActivity != null;
+                    mainActivity.mainFragmentManager(new LoginPage());
+                }
             }
         };
         email = view.findViewById(R.id.passwordReset_email_textView);

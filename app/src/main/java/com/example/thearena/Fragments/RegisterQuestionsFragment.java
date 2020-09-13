@@ -6,12 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.PointsSummary;
@@ -22,9 +20,9 @@ import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.UI.RecyclerViewAdapter;
 import com.example.thearena.Utils.Preferences;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,9 +84,7 @@ public class RegisterQuestionsFragment extends Fragment {
 
         questionList = new QuestionsGetterFromServer(getContext()).getQuestions(new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
-
-            }
+            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {}
 
             @Override
             public <T> void processFinished(T questionList) {
@@ -99,10 +95,7 @@ public class RegisterQuestionsFragment extends Fragment {
 
         });
 
-
         Button registerButton = view.findViewById(R.id.questions_submit_button);
-
-
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -117,20 +110,16 @@ public class RegisterQuestionsFragment extends Fragment {
                 Authentication.registerNewUser(getContext(), new IAsyncResponse() {
                     @Override
                     public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
-
                     }
 
                     @Override
                     public <T> void processFinished(T response) {
                         if(response.toString().equals("{\"Success\":\"New user is created!\"}")) {
-
                             //send success from server!!
-                            Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), getActivity().getBaseContext());
+                            Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
                             //Move to map activity
-
                             MainActivity mainActivity = (MainActivity) getActivity();
                             mainActivity.moveToMap();
-
                         } else
                             Toast.makeText(getActivity(), "" + response.toString(), Toast.LENGTH_SHORT).show();
                     }
