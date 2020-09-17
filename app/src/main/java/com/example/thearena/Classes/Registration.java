@@ -19,21 +19,21 @@ public class Registration {
     private static String phoneNumber;
     private static int age;
     private static boolean isMale;
-    private static boolean intrestedInWomen;
+    private static boolean interestedInWomen;
     private static String password;
 
     private static int score;
 
 
 
-    public static void saveFirstPageInfo(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean intrestedInWomen,String password){
+    public static void saveFirstPageInfo(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean interestedInWomen,String password){
         setEmail(email);
         setFirstName(firstName);
         setLastName(lastName);
         setPhoneNumber(phoneNumber);
         setAge(age);
         seIstMale(male);
-        setIntrestedInWomen(intrestedInWomen);
+        setInterestedInWomen(interestedInWomen);
         setPassword(password);
     }
 
@@ -41,14 +41,14 @@ public class Registration {
     public Registration() {
     }
 
-    public Registration(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean intrestedInWomen,String password){
+    public Registration(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean interestedInWomen,String password){
         setEmail(email);
         setFirstName(firstName);
         setLastName(lastName);
         setPhoneNumber(phoneNumber);
         setAge(age);
         seIstMale(male);
-        setIntrestedInWomen(intrestedInWomen);
+        setInterestedInWomen(interestedInWomen);
         setPassword(password);
     }
 
@@ -105,15 +105,15 @@ public class Registration {
         isMale = male;
     }
 
-    public static String getIntrestedInWomen(){
-        if(intrestedInWomen)
+    public static String getInterestedInWomen(){
+        if(interestedInWomen)
             return "Female";
         else
             return "Male";
     }
 
-    public static void setIntrestedInWomen(boolean intrestedInWomen) {
-        Registration.intrestedInWomen = intrestedInWomen;
+    public static void setInterestedInWomen(boolean interestedInWomen) {
+        Registration.interestedInWomen = interestedInWomen;
     }
 
     public static String getPassword() {

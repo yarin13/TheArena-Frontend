@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Registration;
 import com.example.thearena.R;
+import com.example.thearena.Utils.Encryption;
 import com.google.android.gms.tasks.Task;
 
 import java.util.regex.Pattern;
@@ -41,14 +42,14 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
     private RadioGroup radioGroup;
     private RadioButton maleRadioButton;
     private RadioButton femaleRadioButton;
-    private CheckBox intrestedInMaleCheckBox;
-    private CheckBox intrestedInFemaleCheckBox;
+    private RadioButton interestedInMaleCheckBox;
+    private RadioButton interestedInFemaleCheckBox;
     private EditText password;
     private EditText verifyPassword;
     private Button nextButton;
     private Button backButton;
     private boolean isMale;
-    private boolean intrestedInWomen;
+    private boolean interestedInWomen;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -98,8 +99,8 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
         radioGroup = v.findViewById(R.id.register_gender_radioGroup);
         maleRadioButton = v.findViewById(R.id.register_gender_male_radio);
         femaleRadioButton = v.findViewById(R.id.register_gender_female_radio);
-        intrestedInMaleCheckBox = v.findViewById(R.id.register_interested_male_chkbox);
-        intrestedInFemaleCheckBox = v.findViewById(R.id.register_interested_female_chkbox);
+        interestedInMaleCheckBox = v.findViewById(R.id.register_interested_male_chkbox);
+        interestedInFemaleCheckBox = v.findViewById(R.id.register_interested_female_chkbox);
         password = v.findViewById(R.id.register_password_first_Textbox);
         verifyPassword = v.findViewById(R.id.register_password_second_textbox);
         nextButton = v.findViewById(R.id.register_next_button);
@@ -116,11 +117,11 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
                 //-------------Checking if all fields in register fragment are not empty-------------
                 if (email.getText().toString().equals("") || firstName.getText().toString().equals("") || lastName.getText().toString().equals("") || phoneNumber.getText().toString().equals("")
                         || age.getText().toString().equals("") || radioGroup.getCheckedRadioButtonId() == -1 || password.getText().toString().equals("") || verifyPassword.getText().toString().equals("")
-                        || (!intrestedInMaleCheckBox.isChecked() && !intrestedInFemaleCheckBox.isChecked())) {
+                        || (!interestedInMaleCheckBox.isChecked() && !interestedInFemaleCheckBox.isChecked())) {
                     //please fill all fields!!!!!
                     Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_LONG).show();
                 } else {
-                    //firstPageValidation - function to check password is correct,what gender and who intrested in
+                    //firstPageValidation - function to check password is correct,what gender and who interested in
                     // and if password is good save tha data from this page and load sec fragment
                     try {
                         firstPageValidation();
@@ -156,20 +157,18 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
 
         }
         isMale = maleRadioButton.isChecked();
-        intrestedInWomen = intrestedInFemaleCheckBox.isChecked();
+        interestedInWomen = interestedInFemaleCheckBox.isChecked();
         Registration.saveFirstPageInfo(email.getText().toString(), firstName.getText().toString(), lastName.getText().toString(), phoneNumber.getText().toString(),
-                Integer.parseInt(age.getText().toString()), isMale, intrestedInWomen, password.getText().toString());
+                Integer.parseInt(age.getText().toString()), isMale, interestedInWomen, Encryption.encryptThisString(password.getText().toString()));
         // here move to questions register
         MainActivity mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
         mainActivity.mainFragmentManager(new RegisterQuestionsFragment());
-
     }
 
     private boolean emailCheck() {
         return isValid(email.getText().toString());
     }
-
 
     public static boolean isValid(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\." +
@@ -182,6 +181,4 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
             return false;
         return pat.matcher(email).matches();
     }
-
-
 }

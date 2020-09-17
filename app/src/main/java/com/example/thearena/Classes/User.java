@@ -12,7 +12,7 @@ public class User {
     private String userPhoneNumber;
     private int userAge;
     private String userGender;
-    private String userIntrestedIn;
+    private String userInterestedIn;
     private LatLng coordinates;
 
     public int getUserId() {
@@ -79,15 +79,15 @@ public class User {
         this.userGender = userGender;
     }
 
-    public String getUserIntrestedIn() {
-        return userIntrestedIn;
+    public String getUserInterestedIn() {
+        return userInterestedIn;
     }
 
-    public void setUserIntrestedIn(String userIntrestedIn) {
-        this.userIntrestedIn = userIntrestedIn;
+    public void setUserInterestedIn(String userInterestedIn) {
+        this.userInterestedIn = userInterestedIn;
     }
 
-    public User(int userId, String firstName,String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userIntrestedIn, LatLng coordinates) {
+    public User(int userId, String firstName,String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userInterestedIn, LatLng coordinates) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -95,7 +95,7 @@ public class User {
         this.userPhoneNumber = userPhoneNumber;
         this.userAge = userAge;
         this.userGender = userGender;
-        this.userIntrestedIn = userIntrestedIn;
+        this.userInterestedIn = userInterestedIn;
         this.coordinates = coordinates;
     }
 
@@ -105,7 +105,11 @@ public class User {
         this.coordinates = coordinates;
     }
 
-    public User(int userId, String firstName,String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userIntrestedIn) {
+    public User(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public User(int userId, String firstName, String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userInterestedIn) {
         this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -113,6 +117,6 @@ public class User {
         this.userPhoneNumber = userPhoneNumber;
         this.userAge = userAge;
         this.userGender = userGender;
-        this.userIntrestedIn = userIntrestedIn;
+        this.userInterestedIn = userInterestedIn;
     }
 }

@@ -16,6 +16,7 @@ import com.example.thearena.Classes.PointsSummary;
 import com.example.thearena.Classes.Question;
 import com.example.thearena.Classes.QuestionsGetterFromServer;
 import com.example.thearena.Classes.Registration;
+import com.example.thearena.Classes.User;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.UI.RecyclerViewAdapter;
@@ -84,9 +85,6 @@ public class RegisterQuestionsFragment extends Fragment {
 
         questionList = new QuestionsGetterFromServer(getContext()).getQuestions(new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {}
-
-            @Override
             public <T> void processFinished(T questionList) {
                 recyclerViewAdapter = new RecyclerViewAdapter(getContext(), (List<Question>) questionList);
                 recyclerView.setAdapter(recyclerViewAdapter);
@@ -109,16 +107,13 @@ public class RegisterQuestionsFragment extends Fragment {
 
                 Authentication.registerNewUser(getContext(), new IAsyncResponse() {
                     @Override
-                    public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {
-                    }
-
-                    @Override
                     public <T> void processFinished(T response) {
                         if(response.toString().equals("{\"Success\":\"New user is created!\"}")) {
                             //send success from server!!
                             Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
                             //Move to map activity
                             MainActivity mainActivity = (MainActivity) getActivity();
+                            mainActivity.innerDatabaseHandler.addUser(Registration.getEmail(),Registration.getPassword());
                             mainActivity.moveToMap();
                         } else
                             Toast.makeText(getActivity(), "" + response.toString(), Toast.LENGTH_SHORT).show();

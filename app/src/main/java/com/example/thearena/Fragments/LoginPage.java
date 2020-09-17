@@ -13,8 +13,11 @@ import androidx.fragment.app.Fragment;
 
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Classes.User;
+import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
+import com.example.thearena.Utils.Encryption;
 import com.example.thearena.Utils.Preferences;
 
 import java.util.Objects;
@@ -33,7 +36,6 @@ public class LoginPage extends Fragment implements View.OnClickListener {
 
     private TextView userEmail;
     private TextView password;
-
     private IAsyncResponse iAsyncResponse;
 
 
@@ -87,26 +89,36 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         signIn.setOnClickListener(this);
         register.setOnClickListener(this);
 
-        String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
+        final String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
         String sharedPassword = Preferences.getPassword(getContext());
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T response, @Nullable String mail, @Nullable String pass) {
-                if (response.equals("success")) {
-                    Preferences.saveMailAndPassword(mail,pass, Objects.requireNonNull(getContext()));
+            public <T> void processFinished(T response) {
+                if (response.equals("{\"Success\":\"success\"}")) {
+                    String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
+
+                    Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
+
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
-                    mainActivity.moveToMap();
-                }
-            }
 
-            @Override
-            public <T> void processFinished(T response) {
+                    if (!sharedMail.equals("")){
+                        mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
+                    }else if (!userEmail.getText().toString().equals("")){
+                        mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
+                    }else {
+                        return;
+                    }
+                    mainActivity.moveToMap();
+
+                } else {
+                    Toast.makeText(getContext(), "Email or password are incorrect", Toast.LENGTH_LONG).show();
+                }
             }
         };
 
-        if (!sharedMail.equals("") || !sharedPassword.equals(""))
+        if (!sharedMail.equals("") && !sharedPassword.equals(""))
             Authentication.signIn(sharedMail, sharedPassword, getContext(), iAsyncResponse);
         return v;
     }
@@ -117,7 +129,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.login_singIn_button:
                 String email = userEmail.getText().toString();
-                String pass = password.getText().toString();
+                final String pass = password.getText().toString();
                 if (!email.equals("") && !pass.equals("")) {
                     new Thread(new Runnable() {
                         @Override
@@ -125,8 +137,8 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                             Authentication.signIn(userEmail.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
                         }
                     }).start();
-                }else{
-                    Toast.makeText(getContext(),"Hmm...Something is missing...",Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getContext(), "Hmm...Something is missing...", Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.login_register_button:

@@ -14,8 +14,10 @@ import android.widget.Toast;
 
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
+import com.example.thearena.Utils.Encryption;
 import com.example.thearena.Utils.Preferences;
 
 import java.util.Objects;
@@ -78,14 +80,13 @@ public class PasswordResetFragment extends Fragment implements View.OnClickListe
         View view = inflater.inflate(R.layout.fragment_password_reset, container, false);
         iAsyncResponse = new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {}
-
-            @Override
             public <T> void processFinished(T response) {
-                if (response.equals("success")) {
-                    Preferences.saveMailAndPassword(email.getText().toString(), passwordOne.getText().toString(), Objects.requireNonNull(getContext()));
+                if (response.equals("{\"Success\":\"Success\"}")) {
+                    String pass = Encryption.encryptThisString(passwordOne.getText().toString().trim());
+                    Preferences.saveMailAndPassword(email.getText().toString(), pass, Objects.requireNonNull(getContext()));
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
+                    mainActivity.innerDatabaseHandler.updateUserPassword(pass);
                     mainActivity.mainFragmentManager(new LoginPage());
                 }
             }

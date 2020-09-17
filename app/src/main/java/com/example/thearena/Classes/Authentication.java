@@ -11,6 +11,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Utils.Constants;
+import com.example.thearena.Utils.Encryption;
+
 import org.json.JSONObject;
 import java.util.HashMap;
 
@@ -26,16 +28,20 @@ public class Authentication {
         map.put("userPhoneNumber", Registration.getPhoneNumber().trim());
         map.put("userAge", String.valueOf(Registration.getAge()).trim());
         map.put("userGender", Registration.getIsMale().trim());
-        map.put("userInterestedIn", Registration.getIntrestedInWomen().trim());
+        map.put("userInterestedIn", Registration.getInterestedInWomen().trim());
         map.put("userScore", String.valueOf(Registration.getScore()).trim());
-        map.put("userPassword", Registration.getPassword().trim());
+        map.put("userPassword", Encryption.encryptThisString(Registration.getPassword().trim()));
         requestManager(context, Constants.AUTH_URL, Request.Method.POST, callBack, map);
     }
 
-    public static void signIn(final String email, final String password, final Context context, final IAsyncResponse callBack) {
+    public static void signIn(String email, String password, final Context context, final IAsyncResponse callBack) {
         map.clear();
+        if (password.length() != 64)
+            map.put("password", Encryption.encryptThisString(password));
+        else
+            map.put("password", password);
+
         map.put("email", email);
-        map.put("password", password);
         requestManager(context, Constants.AUTH_URL, Request.Method.POST, callBack, map);
     }
 
@@ -48,16 +54,18 @@ public class Authentication {
 
     public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, final IAsyncResponse iAsyncResponse) {
         map.clear();
-        map.put("lat", String.valueOf(lastCurrentLocation.getLatitude()));
-        map.put("lng", String.valueOf(lastCurrentLocation.getLongitude()));
-        map.put("email", currentUserEmail);
-        requestManager(context, Constants.ONLINE_USER_LOCATION, Request.Method.PUT, iAsyncResponse, map);
+        if (lastCurrentLocation != null) {
+            map.put("lat", String.valueOf(lastCurrentLocation.getLatitude()));
+            map.put("lng", String.valueOf(lastCurrentLocation.getLongitude()));
+            map.put("email", currentUserEmail);
+            requestManager(context, Constants.ONLINE_USER_LOCATION, Request.Method.PUT, iAsyncResponse, map);
+        }
     }
 
-    public static void sendPasswordResetRequest(final Context context, final String currentUserEmail, final String newPassword, final IAsyncResponse iAsyncResponse) {
+    public static void sendPasswordResetRequest(final Context context, String currentUserEmail, String newPassword, final IAsyncResponse iAsyncResponse) {
         map.clear();
         map.put("email", currentUserEmail);
-        map.put("newPassword", newPassword);
+        map.put("newPassword", Encryption.encryptThisString(newPassword));
         requestManager(context, Constants.AUTH_URL, Request.Method.PUT, iAsyncResponse, map);
     }
 
@@ -69,10 +77,10 @@ public class Authentication {
             StringRequest request = new StringRequest(method, uri, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-                    if (response == null) {
-                        return;
+                    if (response != null) {
+                        callback.processFinished(response);
                     }
-                    callback.processFinished(response);
+
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -91,7 +99,7 @@ public class Authentication {
                         if (uri.equals(Constants.AUTH_URL)) {
                             switch (method) {
                                 case Method.POST:
-                                    if (paramsToBody.containsKey("firstName")) {
+                                    if (paramsToBody.size() > 2) {
                                         body.put("email", paramsToBody.get("userEmail"));
                                         body.put("firstName", paramsToBody.get("userFirstName"));
                                         body.put("lastName", paramsToBody.get("userLastName"));
@@ -117,7 +125,7 @@ public class Authentication {
                                 case Method.PUT:
                                     body.put("lat", paramsToBody.get("lat"));
                                     body.put("lng", paramsToBody.get("lng"));
-                                    body.put("email", paramsToBody.get("email"));
+                                    body.put("mail", paramsToBody.get("email"));
                                     break;
                                 case Method.POST:
                                     body.put("email", paramsToBody.get("email"));

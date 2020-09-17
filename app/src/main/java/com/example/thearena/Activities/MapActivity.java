@@ -1,6 +1,7 @@
 package com.example.thearena.Activities;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -19,6 +20,8 @@ import androidx.core.content.ContextCompat;
 
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
+import com.example.thearena.Data.InnerDatabaseHandler;
+import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
@@ -35,19 +38,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+    private static final String TAG = "MAP";
     private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
 
-    private ArrayList<User> userArrayList = new ArrayList<User>();
+    private ArrayList<Object> userArrayList = new ArrayList<>();
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
     private String currentUserEmail;
     private Boolean isLoggedIn;
 
+    public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,23 +68,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         String provider = locationManager.getBestProvider(criteria, false);
         getLocationPermission();
 
-        currentUserEmail = Preferences.getMail(MapActivity.this);
+        currentUserEmail = Preferences.getMail(getBaseContext());
+        if (currentUserEmail.equals("")){
+            currentUserEmail = this.innerDatabaseHandler.getUserEmail();
+        }
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
-            public <T> void processFinished(T questionList, @Nullable String mail, @Nullable String pass) {}
-
-            @Override
             public <T> void processFinished(T response) {
                 userArrayList.clear();
-                if (response != null){
-                    userArrayList.add((User) response);
-                    for (User user : userArrayList){
-                        map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
+                if (!response.equals("[{\"Error\":\"No one else was found\"}]") && !response.equals("")){
+                    userArrayList.add(response);
+                    for (Object obj : userArrayList){
+                        Log.d("response: ", "processFinished: "+obj);
+                        //map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
                     }
                 }else
                     Toast.makeText(MapActivity.this,"look like there in no one here",Toast.LENGTH_LONG).show();
-
             }
         };
 
@@ -85,14 +93,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void run() {
                 for (; ; ) {
                     try {
-                        if (isLoggedIn){
-                            Thread.sleep(60000);
+                        //TODO: continue later!
+                        Log.d(TAG, "run: "+currentUserEmail);
+                        if (isLoggedIn && !currentUserEmail.equals("")){
+                            //Thread.sleep(20000);
                             Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation,iAsyncResponse);
                         }
                         else
+                            if (currentUserEmail.equals("")){
+                                currentUserEmail = Preferences.getMail(getApplicationContext());
+                            }
                             break;
 
-                    } catch (InterruptedException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
