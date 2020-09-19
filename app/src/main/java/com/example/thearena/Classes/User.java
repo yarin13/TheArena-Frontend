@@ -1,6 +1,5 @@
 package com.example.thearena.Classes;
 
-import com.example.thearena.R;
 import com.google.android.gms.maps.model.LatLng;
 
 public class User {
@@ -107,6 +106,16 @@ public class User {
 
     public User(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    public User(int userId, String firstName, String lastName, String userEmail, String userPhoneNumber, int userAge, LatLng coordinates) {
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userEmail = userEmail;
+        this.userPhoneNumber = userPhoneNumber;
+        this.userAge = userAge;
+        this.coordinates = coordinates;
     }
 
     public User(int userId, String firstName, String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userInterestedIn) {

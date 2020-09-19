@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
@@ -38,6 +39,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -78,7 +80,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public <T> void processFinished(T response) {
                 userArrayList.clear();
                 if (!response.equals("[{\"Error\":\"No one else was found\"}]") && !response.equals("")){
-                    userArrayList.add(response);
+                    //userArrayList = User.userCreator(response);
+                    try {
+                        JSONArray json = new JSONArray(response);
+                        Log.d(TAG, ""+json.get(0));
+                    }catch (Exception e){
+                        Log.d(TAG, "processFinished: "+e);
+                    }
+
                     for (Object obj : userArrayList){
                         Log.d("response: ", "processFinished: "+obj);
                         //map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
@@ -93,10 +102,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void run() {
                 for (; ; ) {
                     try {
-                        //TODO: continue later!
-                        Log.d(TAG, "run: "+currentUserEmail);
                         if (isLoggedIn && !currentUserEmail.equals("")){
-                            //Thread.sleep(20000);
+                            Thread.sleep(20000);
                             Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation,iAsyncResponse);
                         }
                         else
