@@ -18,7 +18,7 @@ import java.util.HashMap;
 
 public class Authentication {
 
-    public static HashMap<String, String> map = new HashMap<>();
+    public static HashMap<String, Object> map = new HashMap<>();
 
     public static void registerNewUser(final Context context, final IAsyncResponse callBack) {
         map.clear();
@@ -26,11 +26,11 @@ public class Authentication {
         map.put("userFirstName", Registration.getFirstName().trim());
         map.put("userLastName", Registration.getLastName().trim());
         map.put("userPhoneNumber", Registration.getPhoneNumber().trim());
-        map.put("userAge", String.valueOf(Registration.getAge()).trim());
+        map.put("userAge", Registration.getAge());
         map.put("userGender", Registration.getIsMale().trim());
         map.put("userInterestedIn", Registration.getInterestedInWomen().trim());
-        map.put("userScore", String.valueOf(Registration.getScore()).trim());
-        map.put("userPassword", Encryption.encryptThisString(Registration.getPassword().trim()));
+        map.put("userScore", Registration.getScore());
+        map.put("userPassword", String.valueOf(Registration.getPassword()));
         requestManager(context, Constants.AUTH_URL, Request.Method.POST, callBack, map);
     }
 
@@ -55,8 +55,8 @@ public class Authentication {
     public static void sendLocation(final Context context, final String currentUserEmail, final Location lastCurrentLocation, final IAsyncResponse iAsyncResponse) {
         map.clear();
         if (lastCurrentLocation != null) {
-            map.put("lat", String.valueOf(lastCurrentLocation.getLatitude()));
-            map.put("lng", String.valueOf(lastCurrentLocation.getLongitude()));
+            map.put("lat", lastCurrentLocation.getLatitude());
+            map.put("lng", lastCurrentLocation.getLongitude());
             map.put("email", currentUserEmail);
             requestManager(context, Constants.ONLINE_USER_LOCATION, Request.Method.PUT, iAsyncResponse, map);
         }
@@ -70,7 +70,7 @@ public class Authentication {
     }
 
 
-    public static void requestManager(final Context context, final String uri, final Integer method, final IAsyncResponse callback, final HashMap<String, String> paramsToBody) {
+    public static void requestManager(final Context context, final String uri, final Integer method, final IAsyncResponse callback, final HashMap<String, Object> paramsToBody) {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
 
         if (paramsToBody.size() != 0) {
