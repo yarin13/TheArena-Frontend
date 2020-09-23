@@ -21,27 +21,9 @@ public class Registration {
     private static boolean isMale;
     private static boolean interestedInWomen;
     private static String password;
-
     private static int score;
 
-
-
     public static void saveFirstPageInfo(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean interestedInWomen,String password){
-        setEmail(email);
-        setFirstName(firstName);
-        setLastName(lastName);
-        setPhoneNumber(phoneNumber);
-        setAge(age);
-        seIstMale(male);
-        setInterestedInWomen(interestedInWomen);
-        setPassword(password);
-    }
-
-
-    public Registration() {
-    }
-
-    public Registration(String email,String firstName,String lastName,String phoneNumber,int age,boolean male,boolean interestedInWomen,String password){
         setEmail(email);
         setFirstName(firstName);
         setLastName(lastName);

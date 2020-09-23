@@ -32,9 +32,6 @@ public class QuestionsGetterFromServer {
     }
 
     public List<Question> getQuestions(final IAsyncResponse callBack){
-
-
-
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, Constants.QUESTIONS_URL, null, new Response.Listener<JSONArray>() {
             @Override

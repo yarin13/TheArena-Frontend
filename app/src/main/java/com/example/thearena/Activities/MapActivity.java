@@ -1,15 +1,20 @@
 package com.example.thearena.Activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,8 +41,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -50,7 +58,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
 
-    private ArrayList<Object> userArrayList = new ArrayList<>();
+    private FloatingActionButton menuBtn;
+    private ArrayList<User> userArrayList = new ArrayList<>();
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
@@ -63,12 +72,38 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        //floating buttons:
+        menuBtn = findViewById(R.id.MapFragment_menu_FAB);
+
         isLoggedIn = true;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
         String provider = locationManager.getBestProvider(criteria, false);
         getLocationPermission();
+
+
+        menuBtn.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseCompatLoadingForDrawables")
+            @Override
+            public void onClick(View view) {
+                if (menuBtn.getContentDescription().equals("menu")) {
+                    Snackbar.make(view, "Opening....", Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(getColor(R.color.colorPrimary))
+                            .setAction("Action", null).show();
+
+                    menuBtn.setContentDescription("close");
+                    menuBtn.setImageDrawable(getDrawable(R.drawable.baseline_close_24));
+                }else {
+                    Snackbar.make(view, "closing....", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+
+                    menuBtn.setContentDescription("menu");
+                    menuBtn.setImageDrawable(getDrawable(R.drawable.baseline_menu_24));
+
+                }
+            }
+        });
 
         currentUserEmail = Preferences.getMail(getBaseContext());
         if (currentUserEmail.equals("")){
@@ -78,20 +113,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         iAsyncResponse = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
+                /*
+                This processFinished method is a callback function...
+                Once she had a response it convert it to Map Marker.
+                for now we do not need userArrayList - but maybe in the future we will need to use it to grab images from the server.
+                 */
                 userArrayList.clear();
                 if (!response.equals("[{\"Error\":\"No one else was found\"}]") && !response.equals("")){
                     //userArrayList = User.userCreator(response);
                     try {
-                        JSONArray json = new JSONArray(response);
-                        Log.d(TAG, ""+json.get(0));
+                        JSONArray jsonArray = new JSONArray(response.toString());
+                        JSONObject jsonObject = jsonArray.getJSONObject(0);
+                        JSONArray keys = jsonObject.names();
+                        for (int i = 0; i < keys.length(); i++){
+                            User user = new User();
+                            String id = keys.getString(i);
+                            JSONArray value = jsonObject.getJSONArray(id);
+
+                            user.setFirstName(value.getString(0));
+                            user.setLastName(value.getString(1));
+                            user.setUserEmail(value.getString(2));
+                            user.setUserPhoneNumber(value.getString(3));
+                            user.setUserAge(value.getInt(4));
+                            LatLng userLatLng = new LatLng(value.getDouble(5),value.getDouble(6));
+                            map.addMarker(new MarkerOptions()
+                                    .position(userLatLng)
+                                    .title(user.getUserEmail()));
+                            userArrayList.add(user);
+                        }
+
                     }catch (Exception e){
                         Log.d(TAG, "processFinished: "+e);
                     }
 
-                    for (Object obj : userArrayList){
-                        Log.d("response: ", "processFinished: "+obj);
-                        //map.addMarker(new MarkerOptions().position(new LatLng(user.getCoordinates().latitude,user.getCoordinates().longitude)).title(user.getFirstName()));
-                    }
                 }else
                     Toast.makeText(MapActivity.this,"look like there in no one here",Toast.LENGTH_LONG).show();
             }
@@ -100,6 +154,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         new Thread(new Runnable() {
             @Override
             public void run() {
+                /*
+                This is a Thread that run all the life of the application,
+                during his running his send the current location under 2 circumstance :
+                    1. currentUserEmail must not be null or empty String.
+                    2. isLoggedIn must be true - when using the onStop method: isLoggedIn become false, ans prevent this Thread to run endlessly.
+                 */
                 for (; ; ) {
                     try {
                         if (isLoggedIn && !currentUserEmail.equals("")){

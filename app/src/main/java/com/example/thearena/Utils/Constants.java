@@ -11,9 +11,7 @@ public class Constants {
 
     //URL's :
     public static final String QUESTIONS_URL = "http://10.0.2.2:8080/TheArenaServlet/QuestionServlet";
-
     public static final String AUTH_URL = "http://10.0.2.2:8080/TheArenaServlet/Authentication";
-
     public static final String ONLINE_USER_LOCATION = "http://10.0.2.2:8080/TheArenaServlet/onlineUsersLocation";
 
     //inner Database

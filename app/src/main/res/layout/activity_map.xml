@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".Activities.MapActivity">
 
-
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/MapId"
@@ -14,5 +13,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.example.mapwithmarker.MapsMarkerActivity" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/MapFragment_menu_FAB"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="315dp"
+        android:layout_marginBottom="651dp"
+        android:contentDescription="@string/menu"
+        android:src="@drawable/baseline_menu_24" />
 
 </RelativeLayout>

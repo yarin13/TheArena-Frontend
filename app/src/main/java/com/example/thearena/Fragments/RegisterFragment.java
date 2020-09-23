@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Registration;
+import com.example.thearena.Classes.User;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Encryption;
 import com.google.android.gms.tasks.Task;
@@ -158,6 +159,7 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
         }
         isMale = maleRadioButton.isChecked();
         interestedInWomen = interestedInFemaleCheckBox.isChecked();
+
         Registration.saveFirstPageInfo(email.getText().toString(), firstName.getText().toString(), lastName.getText().toString(), phoneNumber.getText().toString(),
                 Integer.parseInt(age.getText().toString()), isMale, interestedInWomen, Encryption.encryptThisString(password.getText().toString()));
         // here move to questions register

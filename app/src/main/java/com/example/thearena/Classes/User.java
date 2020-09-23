@@ -14,6 +14,7 @@ public class User {
     private String userInterestedIn;
     private LatLng coordinates;
 
+
     public int getUserId() {
         return userId;
     }
@@ -71,61 +72,65 @@ public class User {
     }
 
     public String getUserGender() {
-        return userGender;
+        return this.userGender;
     }
 
-    public void setUserGender(String userGender) {
-        this.userGender = userGender;
+    public void setUserGender(String gender) {
+        this.userGender = gender;
     }
 
-    public String getUserInterestedIn() {
-        return userInterestedIn;
+    public String getUserInterestedIn(){
+        return this.userInterestedIn;
     }
 
-    public void setUserInterestedIn(String userInterestedIn) {
-        this.userInterestedIn = userInterestedIn;
+    public void setUserInterestedIn(String interestedInWomen) {
+        this.userInterestedIn = interestedInWomen;
     }
+
 
     public User(int userId, String firstName,String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userInterestedIn, LatLng coordinates) {
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.userEmail = userEmail;
-        this.userPhoneNumber = userPhoneNumber;
-        this.userAge = userAge;
-        this.userGender = userGender;
-        this.userInterestedIn = userInterestedIn;
+        setUserId(userId);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setUserEmail(userEmail);
+        setUserPhoneNumber(userPhoneNumber);
+        setUserAge(userAge);
+        setUserGender(userGender);
+        setUserInterestedIn(userInterestedIn);
         this.coordinates = coordinates;
     }
+    public User() {
 
+    }
     public User(int userId, String userEmail, LatLng coordinates) {
-        this.userId = userId;
-        this.userEmail = userEmail;
+        setUserId( userId);
+        setUserEmail( userEmail);
         this.coordinates = coordinates;
     }
 
     public User(String userEmail) {
-        this.userEmail = userEmail;
+        setUserEmail(userEmail);
     }
 
     public User(int userId, String firstName, String lastName, String userEmail, String userPhoneNumber, int userAge, LatLng coordinates) {
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.userEmail = userEmail;
-        this.userPhoneNumber = userPhoneNumber;
-        this.userAge = userAge;
+        setUserId( userId);
+        setFirstName( firstName);
+        setLastName( lastName);
+        setUserEmail(userEmail);
+        setUserPhoneNumber( userPhoneNumber);
+        setUserAge( userAge);
         this.coordinates = coordinates;
     }
 
     public User(int userId, String firstName, String lastName, String userEmail, String userPhoneNumber, int userAge, String userGender, String userInterestedIn) {
-        this.userId = userId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.userEmail = userEmail;
-        this.userPhoneNumber = userPhoneNumber;
-        this.userAge = userAge;
-        this.userGender = userGender;
-        this.userInterestedIn = userInterestedIn;
+        setUserId(userId);
+        setFirstName(firstName);
+        setLastName(lastName);
+        setUserEmail(userEmail);
+        setUserPhoneNumber(userPhoneNumber);
+        setUserAge(userAge);
+        setUserGender(userGender);
+        setUserInterestedIn( userInterestedIn);
     }
+
 }

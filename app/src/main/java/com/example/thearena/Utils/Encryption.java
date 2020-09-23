@@ -4,6 +4,9 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/*
+The same class as we used in the Arena Server...
+ */
 public final class Encryption {
 	public static String encryptThisString(String input) {
 		try {

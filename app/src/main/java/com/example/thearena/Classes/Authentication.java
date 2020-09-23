@@ -17,6 +17,18 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 public class Authentication {
+    /*
+        This class is compact with functions that all of them call the - requestManager function.
+        registerNewUser (context, callback) - get all the field from the Registration class
+        signIn (context, email, password, callback) -
+        logoff (context, email) -
+        sendLocation(context, email, coordinates, callback) -
+        sendPasswordResetRequest(context, email, newPassword, callback) -
+
+        requestManager - This function in responsible to manage all the requests,
+                        to call this function need to make sure you pass a context , URL , Method_Type , callback , map.
+                        it first check the URL , then the Method_Type - GET, POST...
+     */
 
     public static HashMap<String, Object> map = new HashMap<>();
 
@@ -34,7 +46,7 @@ public class Authentication {
         requestManager(context, Constants.AUTH_URL, Request.Method.POST, callBack, map);
     }
 
-    public static void signIn(String email, String password, final Context context, final IAsyncResponse callBack) {
+    public static void signIn(final Context context, String email, String password, final IAsyncResponse callBack) {
         map.clear();
         if (password.length() != 64)
             map.put("password", Encryption.encryptThisString(password));
@@ -125,7 +137,7 @@ public class Authentication {
                                 case Method.PUT:
                                     body.put("lat", paramsToBody.get("lat"));
                                     body.put("lng", paramsToBody.get("lng"));
-                                    body.put("mail", paramsToBody.get("email"));
+                                    body.put("email", paramsToBody.get("email"));
                                     break;
                                 case Method.POST:
                                     body.put("email", paramsToBody.get("email"));
