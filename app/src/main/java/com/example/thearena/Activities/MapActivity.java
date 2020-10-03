@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -53,7 +54,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener {
     private static final String TAG = "MAP";
     private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
@@ -68,12 +69,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
 
+
+
+    LinearLayout view;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         //floating buttons:
         menuBtn = findViewById(R.id.MapFragment_menu_FAB);
+
+
+
+        view = findViewById(R.id.MapFragment_userSideMenu);
+        view.setVisibility(View.GONE);
+
+
+
+
 
         isLoggedIn = true;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -136,10 +151,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             user.setUserPhoneNumber(value.getString(3));
                             user.setUserAge(value.getInt(4));
                             LatLng userLatLng = new LatLng(value.getDouble(5),value.getDouble(6));
-                            map.addMarker(new MarkerOptions()
-                                    .position(userLatLng)
-                                    .title(user.getUserEmail()));
+//                            map.addMarker(new MarkerOptions()
+//                                    .position(userLatLng)
+//                                    .title(user.getUserEmail()));
                             userArrayList.add(user);
+                            createMenu(map,userLatLng,user);
                         }
 
                     }catch (Exception e){
@@ -179,6 +195,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }).start();
     }
+
+    private void createMenu(GoogleMap map, LatLng userLatLng, User user) {
+                                   map.addMarker(new MarkerOptions()
+                                    .position(userLatLng)
+                                    .title(user.getUserEmail()));
+
+    }
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+      view.setVisibility(View.VISIBLE);
+        return false;
+    }
+
 
     private void getLocationPermission() {
         /*
@@ -246,6 +275,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.MapId);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+
     }
 
     @Override
@@ -266,6 +296,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null);
                 }
             }).start();
+            googleMap.setOnMarkerClickListener(this);
 
         } else {
             getLocationPermission();
@@ -308,5 +339,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }.run();
         super.onStop();
     }
+
+
 }
 

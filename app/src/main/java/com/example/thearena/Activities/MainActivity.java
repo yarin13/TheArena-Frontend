@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.thearena.Data.InnerDatabaseHandler;
+import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.R;
 
@@ -34,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d("savedInstanceState", "onCreate: ");
                 return;
             }
-            mainFragmentManager(new LoginPage());
+      //      mainFragmentManager(new LoginPage());
+            mainFragmentManager(new ImageUploadFragment());
 
         }
     }

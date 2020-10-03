@@ -119,7 +119,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         };
 
         if (!sharedMail.equals("") && !sharedPassword.equals(""))
-            Authentication.signIn(sharedMail, sharedPassword, getContext(), iAsyncResponse);
+            Authentication.signIn(getContext(),sharedMail, sharedPassword,  iAsyncResponse);
         return v;
     }
 
@@ -134,7 +134,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            Authentication.signIn(userEmail.getText().toString(), password.getText().toString(), getContext(), iAsyncResponse);
+                            Authentication.signIn(getContext(),userEmail.getText().toString(), password.getText().toString(),  iAsyncResponse);
                         }
                     }).start();
                 } else {
