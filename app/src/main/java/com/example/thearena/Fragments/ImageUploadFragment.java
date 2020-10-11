@@ -1,6 +1,7 @@
 package com.example.thearena.Fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
@@ -11,12 +12,14 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -46,12 +50,14 @@ import com.example.thearena.Interfaces.UploadApis;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Preferences;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -72,12 +78,13 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
 
     private Button chooseBtn;
     private Button submitBtn;
-    private Button skipBtn;
     private ImageView imageView;
+    private TextView subTitle;
+    private int originImageView;
     private final int GALLERY_REQUEST_CODE = 123;
     private Uri imageData = null;
     private File file = null;
-    private Boolean storagePermissionGranted;
+    private Boolean storagePermissionGranted = false;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -125,17 +132,15 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_image_upload, container, false);
-
+        subTitle = v.findViewById(R.id.imageUploadSubTitleTextView);
         chooseBtn = v.findViewById(R.id.imageUploadSelectImageButton);
-        submitBtn = v.findViewById(R.id.imageUploadSubmitButton);
-        skipBtn = v.findViewById(R.id.imageUploadRegister);
+        submitBtn = v.findViewById(R.id.imageUploadEnterArena);
         imageView = v.findViewById(R.id.imageUploadImageView);
-
+        imageView.setTag(R.drawable.ic_user_profile_24);
+        originImageView = (Integer)imageView.getTag();
         chooseBtn.setOnClickListener(this);
         submitBtn.setOnClickListener(this);
-        skipBtn.setOnClickListener(this);
 
-        checkStoragePermissions(getActivity());
         return v;
     }
 
@@ -145,11 +150,10 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         {
             case R.id.imageUploadSelectImageButton:
                 selectImageFromGallery();
+                checkImage();
                 break;
-            case R.id.imageUploadSubmitButton:
-                sendImageToServer(imageData);
-                break;
-            case R.id.imageUploadRegister:
+            case R.id.imageUploadEnterArena:
+                sendImageToServer();
                 //moveToMap
                 MainActivity mainActivity = (MainActivity) getActivity();
                 mainActivity.moveToMap();
@@ -157,9 +161,15 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    private void sendImageToServer(Uri imageData) {
+    private void checkImage() {
+        if ((Integer) imageView.getTag() != originImageView){
+            subTitle.setText("You look stunning, dear\n" +
+                    "So don't ask that question here");
+        }
+    }
+
+    private void sendImageToServer() {
         if(file != null){
-            Log.d("Testingg","before");
             Retrofit retrofit = NetworkClient.getRetrofit();
             UploadApis uploadApis = retrofit.create(UploadApis.class);
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -178,8 +188,8 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
             });
         }
         else
-            Toast.makeText(getContext(),"Please select an image",Toast.LENGTH_LONG).show();
-        file = null;
+            Snackbar.make(Objects.requireNonNull(getView()),"Make sure to upload a picture later",Snackbar.LENGTH_LONG).show();
+
     }
 
     private void selectImageFromGallery(){
@@ -191,7 +201,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
             startActivityForResult(Intent.createChooser(intent,"Pick an image"),GALLERY_REQUEST_CODE);
         }
         else{
-            requestPermission(getActivity());
+            checkStoragePermissions();
         }
 
     }
@@ -205,15 +215,12 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
             imageData = data.getData();              // here we store the selected data
             imageView.setImageURI(imageData);
             imageView.setVisibility(View.VISIBLE);
-
+            imageView.setTag(0);
             Uri selectedFileURI = data.getData();
             String fullPath = getPath(getContext(), selectedFileURI);
             file = new File(fullPath);
         }
     }
-
-
-
 
     @Nullable
     public static String getPath(Context context, Uri uri) {
@@ -318,29 +325,26 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
-    public  void checkStoragePermissions(Activity activity) {
-        if(!(ContextCompat.checkSelfPermission(getContext(), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(getContext(), Constants.WRITE_STORAGE) == PackageManager.PERMISSION_GRANTED))
-        {
-            storagePermissionGranted = false;
-            // We don't have permission so prompt the user
-            requestPermission(activity);
-        }
-        else
+    public void checkStoragePermissions() {
+        if(ContextCompat.checkSelfPermission(getContext(), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             storagePermissionGranted = true;
+        }
+        else{
+            storagePermissionGranted = false;
+            requestPermission(getActivity());
+        }
     }
 
     public void requestPermission(Activity activity){
         String[] PERMISSIONS_STORAGE = {
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
+        activity.requestPermissions(PERMISSIONS_STORAGE,Constants.REQUEST_EXTERNAL_STORAGE);
 
-        ActivityCompat.requestPermissions(
-                activity,
-                PERMISSIONS_STORAGE,
-                Constants.REQUEST_EXTERNAL_STORAGE
-        );
+        if (ContextCompat.checkSelfPermission(getContext(), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            storagePermissionGranted = true;
+        }
+
     }
 
     @Override
