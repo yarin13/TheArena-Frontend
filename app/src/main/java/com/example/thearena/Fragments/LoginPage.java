@@ -1,6 +1,7 @@
 package com.example.thearena.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,15 @@ import androidx.fragment.app.Fragment;
 
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Classes.Registration;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Encryption;
 import com.example.thearena.Utils.Preferences;
+
+import org.json.JSONObject;
 
 import java.util.Objects;
 
@@ -95,25 +99,31 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         iAsyncResponse = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
-                if (response.equals("{\"Success\":\"success\"}")) {
-                    String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
 
-                    Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
+                try {
+                    JSONObject res = new JSONObject(response.toString());
+                    if(res.has("Success")){
+                        String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
 
-                    MainActivity mainActivity = (MainActivity) getActivity();
-                    assert mainActivity != null;
+                        Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
+                        Preferences.saveUserId(res.getString("userId"),Objects.requireNonNull(getContext()));
 
-                    if (!sharedMail.equals("")){
-                        mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
-                    }else if (!userEmail.getText().toString().equals("")){
-                        mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
-                    }else {
-                        return;
+                        MainActivity mainActivity = (MainActivity) getActivity();
+                        assert mainActivity != null;
+
+                        if (!sharedMail.equals("")){
+                            mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
+                        }else if (!userEmail.getText().toString().equals("")){
+                            mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
+                        }else {
+                            return;
+                        }
+                        mainActivity.moveToMap();
+                    }  else {
+                        Toast.makeText(getContext(), "Email or password are incorrect", Toast.LENGTH_LONG).show();
                     }
-                    mainActivity.moveToMap();
-
-                } else {
-                    Toast.makeText(getContext(), "Email or password are incorrect", Toast.LENGTH_LONG).show();
+                } catch (Throwable t) {
+                    Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");
                 }
             }
         };

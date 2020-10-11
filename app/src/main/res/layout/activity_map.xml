@@ -6,13 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".Activities.MapActivity">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"/>
+
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/MapId"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.mapwithmarker.MapsMarkerActivity" />
+        tools:context="com.example.mapwithmarker.MapsMarkerActivity"
+        android:layout_below="@id/toolbar"/>
 
 
 
@@ -20,45 +25,46 @@
     <LinearLayout
         android:id = "@+id/MapFragment_userSideMenu"
         android:orientation = "vertical"
-        android:background="@color/cardview_dark_background"
+        android:background="@color/cardview_light_background"
         android:layout_alignParentBottom="true"
         android:layout_width = "match_parent"
         android:layout_margin = "20dp"
         android:layout_height = "wrap_content">
 
-        <ImageButton
+        <ImageView
             android:id="@+id/MapFragment_userPhoto"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_width="100dp"
+            android:layout_height="100dp">
 
-        </ImageButton>
+        </ImageView>
 
         <TextView
             android:id="@+id/MapFragment_userName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Full Name"></TextView>
+            android:text="Full Name"/>
 
         <TextView
             android:id="@+id/MapFragment_userAge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Age"></TextView>
+            android:text="Age"/>
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/MapFragment_menu_FAB"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="315dp"
-        android:layout_marginBottom="651dp"
-        android:contentDescription="@string/menu"
-        android:src="@drawable/baseline_menu_24" />
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/MapFragment_menu_FAB"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="60dp"-->
+<!--        android:layout_alignParentStart="true"-->
+<!--        android:layout_alignParentTop="true"-->
+<!--        android:layout_alignParentEnd="true"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_marginStart="36dp"-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        android:layout_marginEnd="315dp"-->
+<!--        android:layout_marginBottom="651dp"-->
+<!--        android:contentDescription="@string/menu"-->
+<!--        android:src="@drawable/baseline_menu_24" />-->
+
 
 </RelativeLayout>

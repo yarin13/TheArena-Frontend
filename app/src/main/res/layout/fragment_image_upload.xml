@@ -21,11 +21,18 @@
 
 
     <Button
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Submit"
+    android:layout_below="@+id/imageUploadSelectImageButton"
+    android:id="@+id/imageUploadSubmitButton"/>
+
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Submit"
-        android:layout_below="@+id/imageUploadSelectImageButton"
-        android:id="@+id/imageUploadSubmitButton"/>
+        android:text="Register"
+        android:layout_below="@+id/imageUploadSubmitButton"
+        android:id="@+id/imageUploadRegister"/>
 
 
 </RelativeLayout>

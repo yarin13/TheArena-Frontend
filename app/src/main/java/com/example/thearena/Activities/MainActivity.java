@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d("savedInstanceState", "onCreate: ");
                 return;
             }
-      //      mainFragmentManager(new LoginPage());
-            mainFragmentManager(new ImageUploadFragment());
+           mainFragmentManager(new LoginPage());
+      //      mainFragmentManager(new ImageUploadFragment());
 
         }
     }

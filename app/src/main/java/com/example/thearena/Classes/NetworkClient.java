@@ -1,5 +1,8 @@
 package com.example.thearena.Classes;
 
+import com.example.thearena.Utils.Constants;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -9,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class NetworkClient {
 
     private static Retrofit retrofit = null;
-    private static String Base_URL = "http://10.0.2.2:8080/TheArenaServlet/";
+
 
     public static Retrofit getRetrofit(){
         OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
@@ -23,9 +26,10 @@ public class NetworkClient {
                     .build();
 
             retrofit = new Retrofit.Builder()
-                    .baseUrl(Base_URL)
+                    .baseUrl(Constants.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client)
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
         }
 

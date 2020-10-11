@@ -1,5 +1,7 @@
 package com.example.thearena.Classes;
 
+import android.graphics.Bitmap;
+
 import com.google.android.gms.maps.model.LatLng;
 
 public class User {
@@ -13,7 +15,31 @@ public class User {
     private String userGender;
     private String userInterestedIn;
     private LatLng coordinates;
+    private double latitude;
+    private double longitude;
 
+    private Bitmap profilePic;
+
+
+    public double getUserLatitude() {
+        return latitude;
+    }
+
+    public void setUserLatitude(double latitude) { this.latitude = latitude; }
+
+    public double getUserLongitude() {
+        return longitude;
+    }
+
+    public void setUserLongitude(double longitude) { this.longitude = longitude; }
+
+
+
+    public void setProfilePic(Bitmap profilePic) { this.profilePic = profilePic; }
+
+    public Bitmap getProfilePic() {
+        return profilePic;
+    }
 
     public int getUserId() {
         return userId;

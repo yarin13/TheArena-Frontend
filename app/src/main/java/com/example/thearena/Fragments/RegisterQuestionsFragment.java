@@ -1,26 +1,30 @@
 package com.example.thearena.Fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
-import androidx.annotation.Nullable;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.PointsSummary;
 import com.example.thearena.Classes.Question;
 import com.example.thearena.Classes.QuestionsGetterFromServer;
 import com.example.thearena.Classes.Registration;
-import com.example.thearena.Classes.User;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.UI.RecyclerViewAdapter;
 import com.example.thearena.Utils.Preferences;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -106,21 +110,29 @@ public class RegisterQuestionsFragment extends Fragment {
                 //------------------------------------------------------create new User------------------------------------------
 
                 Authentication.registerNewUser(getContext(), new IAsyncResponse() {
+
                     @Override
                     public <T> void processFinished(T response) {
-                        if(response.toString().equals("{\"Success\":\"New user is created!\"}")) {
-                            //send success from server!!
-                            Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
-                            //Move to map activity
-                            MainActivity mainActivity = (MainActivity) getActivity();
-                            mainActivity.innerDatabaseHandler.addUser(Registration.getEmail(),Registration.getPassword());
-                            mainActivity.moveToMap();
-                        } else
-                            Toast.makeText(getActivity(), "" + response.toString(), Toast.LENGTH_SHORT).show();
+                        try {
+                            JSONObject res = new JSONObject(response.toString());
+                            if(res.has("Success")){
+                                Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
+                                Preferences.saveUserId(res.get("userId").toString(),Objects.requireNonNull(getActivity()).getBaseContext());
+                                Log.d("Testingg","UserId: "+res.get("userId").toString());
+                                MainActivity mainActivity = (MainActivity) getActivity();
+                                assert mainActivity != null;
+                                mainActivity.innerDatabaseHandler.addUser(Registration.getEmail(), Registration.getPassword());
+                                mainActivity.mainFragmentManager(new ImageUploadFragment());
+                            } else
+                                Toast.makeText(getActivity(), "" + response.toString(), Toast.LENGTH_SHORT).show();
+                        } catch (Throwable t) {
+                            Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");
+                        }
                     }
                 });
             }
         });
+
         return view;
     }
 }

@@ -3,16 +3,23 @@ package com.example.thearena.Utils;
 import android.Manifest;
 
 public class Constants {
-
+    //Location Constants
     public static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     public static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     public static final float DEFAULT_ZOOM = 18f;
 
+    //Images' upload Constants
+    public static final String READ_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
+    public static final String WRITE_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    public static final int REQUEST_EXTERNAL_STORAGE = 3;
+
     //URL's :
+    public static final String BASE_URL = "http://10.0.2.2:8080/TheArenaServlet/";
     public static final String QUESTIONS_URL = "http://10.0.2.2:8080/TheArenaServlet/QuestionServlet";
     public static final String AUTH_URL = "http://10.0.2.2:8080/TheArenaServlet/Authentication";
     public static final String ONLINE_USER_LOCATION = "http://10.0.2.2:8080/TheArenaServlet/onlineUsersLocation";
+    public static final String PHOTOS_URL = "http://10.0.2.2:8080/TheArenaServlet/PhotosServlet";
 
     //inner Database
     public static final int DATABASE_VERSION = 1;
