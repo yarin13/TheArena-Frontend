@@ -23,4 +23,8 @@
     <string name="reset">Reset</string>
     <string name="enter_your_email">Enter your email</string>
     <string name="menu">menu</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="enter_to_the_arena">Enter to the Arena</string>
+    <string name="choose_image">Choose Image</string>
+    <string name="user_profile_picture">User profile picture</string>
 </resources>
