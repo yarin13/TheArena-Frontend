@@ -39,12 +39,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-
-import com.android.volley.Network;
-import com.android.volley.Request;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+//import com.android.volley.AuthFailureError;
+//
+//import com.android.volley.Network;
+//import com.android.volley.Request;
+//import com.android.volley.VolleyError;
+//import com.android.volley.toolbox.StringRequest;
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.NetworkClient;
 import com.example.thearena.Interfaces.UploadApis;
