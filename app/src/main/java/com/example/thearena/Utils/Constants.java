@@ -6,7 +6,10 @@ public class Constants {
     //Location Constants
     public static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     public static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
+    public static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
+    public static final int GALLERY_PERMISSION__REQUEST_CODE = 123;
+    public static final int PICTURE_PERMISSION__REQUEST_CODE = 12;
     public static final float DEFAULT_ZOOM = 18f;
 
     //Images' upload Constants
