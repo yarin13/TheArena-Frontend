@@ -1,4 +1,5 @@
 package com.example.thearena.Activities;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -16,8 +17,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,6 +55,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -66,7 +70,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private String currentUserEmail;
     private Boolean isLoggedIn;
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
-    private LinearLayout view;
+
     private ImageView userProfilePic;
     private TextView textViewUserName;
     private TextView textViewUserAge;
@@ -80,17 +84,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private TextView drawerUserAge;
     private FloatingActionButton floatingActionButton;
 
+    private NavigationView secNavigationView;
+    private ActionBarDrawerToggle sec_actionBarDrawerToggle;
+    private ImageView sec_drawerProfilePic;
+    private TextView sec_drawerHeaderUserName;
+    private User selectedUser ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        secNavigationView = findViewById(R.id.secNavigationView);
+
         drawerLayout = findViewById(R.id.drawer);
         navigationView = findViewById(R.id.navigationView);
-        navigationView.setNavigationItemSelectedListener(this);
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,null,R.string.open,R.string.close){
+
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
             @Override
             public void onDrawerOpened(View drawerView) {
-               // supportInvalidateOptionsMenu();
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
@@ -99,23 +111,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
             }
         };
+        sec_actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                sec_drawerProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
+                sec_drawerHeaderUserName = findViewById(R.id.sec_drawerHeaderUserName);
+                sec_drawerHeaderUserName.setText(selectedUser.getFirstName() + " "+ selectedUser.getLastName());
+                GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+                        .addHeader("action", "getProfilePhoto")
+                        .addHeader("userId", String.valueOf(selectedUser.getUserId()))
+                        .build());
+                Glide.with(MapActivity.this).load(glideUrl).into(sec_drawerProfilePic);
+            }
+        };
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
+
+        secNavigationView.setNavigationItemSelectedListener(this);
+
         navigationView.setNavigationItemSelectedListener(this);
         floatingActionButton = findViewById(R.id.mapFloatingButton);
         floatingActionButton.setAlpha(0.50f);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                drawerLayout.openDrawer(Gravity.LEFT);
+                drawerLayout.openDrawer(Gravity.RIGHT);
             }
         });
-        view = findViewById(R.id.MapFragment_userSideMenu);
-        textViewUserName = findViewById(R.id.MapFragment_userName);
-        textViewUserAge = findViewById(R.id.MapFragment_userAge);
-        userProfilePic = findViewById(R.id.MapFragment_userPhoto);
-        view.setVisibility(View.GONE);
+
         isLoggedIn = true;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -178,7 +202,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     1. currentUserEmail must not be null or empty String.
                     2. isLoggedIn must be true - when using the onStop method: isLoggedIn become false, ans prevent this Thread to run endlessly.
                  */
-                while(true){
+                while (true) {
                     try {
                         if (isLoggedIn && !currentUserEmail.equals("")) {
                             //Thread.sleep(threadRequestTiming); --------------> Wait 5 minutes between every update request.
@@ -212,16 +236,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         User currentUser = extraMarkerInfo.get(marker.getId());
-        String userName = currentUser.getFirstName() + " " + currentUser.getLastName();
-        int userAge = currentUser.getUserAge();
-        textViewUserName.setText(userName);
-        textViewUserAge.setText(String.valueOf(userAge));
-        GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
-                .addHeader("action", "getProfilePhoto")
-                .addHeader("userId", String.valueOf(currentUser.getUserId()))
-                .build());
-        Glide.with(this).load(glideUrl).into(userProfilePic);
-        view.setVisibility(View.VISIBLE);
+        selectedUser = extraMarkerInfo.get(marker.getId());
+
+
+//        String userName = currentUser.getFirstName() + " " + currentUser.getLastName();
+//        sec_drawerProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
+//        GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+//                .addHeader("action", "getProfilePhoto")
+//                .addHeader("userId", String.valueOf(currentUser.getUserId()))
+//                .build());
+//        Glide.with(this).load(glideUrl).into(sec_drawerProfilePic);
+
         return false;
     }
 
@@ -281,6 +306,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
     }
+
     //this function is called automatically by the locationManager.getLocationUpdates according to the time we set it to be called
     @Override
     public void onLocationChanged(@NonNull Location location) {
@@ -323,7 +349,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
                 @Override
                 public void onMapClick(LatLng latLng) {
-                    view.setVisibility(View.GONE);
+                    secNavigationView.setVisibility(View.GONE);
                 }
             });
 
@@ -331,7 +357,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             getLocationPermission();
         }
     }
-
 
 
     private void getDeviceLocation() {
