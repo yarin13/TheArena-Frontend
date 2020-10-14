@@ -8,6 +8,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,10 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.media.VolumeProviderCompat;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
@@ -43,13 +48,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MAP";
     private IAsyncResponse iAsyncResponse;
     Location lastCurrentLocation;
@@ -64,15 +71,46 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private TextView textViewUserName;
     private TextView textViewUserAge;
     private HashMap<String, User> extraMarkerInfo = new HashMap<String, User>();
-    private Toolbar toolbar;
     private int threadRequestTiming = 1000 * 60 * 3;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
+    private NavigationView navigationView;
+    private ImageView drawerProfilePic;
+    private TextView drawerUserName;
+    private TextView drawerUserAge;
+    private FloatingActionButton floatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        drawerLayout = findViewById(R.id.drawer);
+        navigationView = findViewById(R.id.navigationView);
+        navigationView.setNavigationItemSelectedListener(this);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,null,R.string.open,R.string.close){
+            @Override
+            public void onDrawerOpened(View drawerView) {
+               // supportInvalidateOptionsMenu();
+                drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
+                GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+                        .addHeader("action", "getProfilePhoto")
+                        .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
+                        .build());
+                Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
+            }
+        };
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+        actionBarDrawerToggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
+        floatingActionButton = findViewById(R.id.mapFloatingButton);
+        floatingActionButton.setAlpha(0.50f);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(Gravity.LEFT);
+            }
+        });
         view = findViewById(R.id.MapFragment_userSideMenu);
         textViewUserName = findViewById(R.id.MapFragment_userName);
         textViewUserAge = findViewById(R.id.MapFragment_userAge);
@@ -162,28 +200,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_xml, menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.menu_logout:
-               //do something..
-                return true;
-            case R.id.menu_profile:
-                //do something..
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     private void createMarker(GoogleMap map, User user) {
         Marker marker = map.addMarker(new MarkerOptions()
@@ -304,6 +320,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }).start();
             googleMap.setOnMarkerClickListener(this);
+            googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+                @Override
+                public void onMapClick(LatLng latLng) {
+                    view.setVisibility(View.GONE);
+                }
+            });
 
         } else {
             getLocationPermission();
@@ -341,7 +363,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }.run();
         super.onStop();
     }
-//========================================================================================================================================
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_logout:
+                //do something..
+                return true;
+            case R.id.menu_profile:
+                //do something..
+                return true;
+
+        }
+        return true;
+    }
+
+
+    //========================================================================================================================================
 //private void getProfilePic(User user, int userId) {
 //    Retrofit retrofit = NetworkClient.getRetrofit();
 //    UploadApis uploadApis = retrofit.create(UploadApis.class);

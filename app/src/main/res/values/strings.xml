@@ -27,4 +27,6 @@
     <string name="enter_to_the_arena">Enter to the Arena</string>
     <string name="choose_image">Choose Image</string>
     <string name="user_profile_picture">User profile picture</string>
+    <string name="open">open</string>
+    <string name="close">close</string>
 </resources>
