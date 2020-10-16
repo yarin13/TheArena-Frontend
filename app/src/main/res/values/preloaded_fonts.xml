@@ -3,6 +3,8 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/aladin</item>
         <item>@font/allan</item>
+        <item>@font/annie_use_your_telescope</item>
+        <item>@font/bad_script</item>
         <item>@font/bangers</item>
     </array>
 </resources>

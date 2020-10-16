@@ -13,11 +13,10 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
+import com.example.thearena.Fragments.SplashScreen;
 import com.example.thearena.R;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    public static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MainActivity.this);
 
@@ -35,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d("savedInstanceState", "onCreate: ");
                 return;
             }
-           mainFragmentManager(new LoginPage());
-      //      mainFragmentManager(new ImageUploadFragment());
+            mainFragmentManager(new SplashScreen());
+            //      mainFragmentManager(new ImageUploadFragment());
 
         }
     }

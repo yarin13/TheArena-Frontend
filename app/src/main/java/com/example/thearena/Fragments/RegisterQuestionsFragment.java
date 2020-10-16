@@ -117,7 +117,7 @@ public class RegisterQuestionsFragment extends Fragment {
                             JSONObject res = new JSONObject(response.toString());
                             if(res.has("Success")){
                                 Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
-                                Preferences.saveUserId(res.get("userId").toString(),Objects.requireNonNull(getActivity()).getBaseContext());
+                                Preferences.saveUserId((Integer) res.get("userId"),Objects.requireNonNull(getActivity()).getBaseContext());
                                 Log.d("Testingg","UserId: "+res.get("userId").toString());
                                 MainActivity mainActivity = (MainActivity) getActivity();
                                 assert mainActivity != null;

@@ -1,21 +1,18 @@
 package com.example.thearena.Fragments;
 
 import android.os.Bundle;
+
+import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import com.example.thearena.Activities.MainActivity;
 import com.example.thearena.Classes.Authentication;
-import com.example.thearena.Classes.Registration;
-import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
@@ -26,12 +23,14 @@ import org.json.JSONObject;
 
 import java.util.Objects;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link LoginPage#newInstance} factory method to
+ * Use the {@link SplashScreen#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginPage extends Fragment implements View.OnClickListener {
+public class SplashScreen extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,12 +41,11 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     private TextView password;
     private IAsyncResponse iAsyncResponse;
 
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public LoginPage() {
+    public SplashScreen() {
         // Required empty public constructor
     }
 
@@ -57,11 +55,11 @@ public class LoginPage extends Fragment implements View.OnClickListener {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment LoginPage.
+     * @return A new instance of fragment SplashScreen.
      */
     // TODO: Rename and change types and number of parameters
-    public static LoginPage newInstance(String param1, String param2) {
-        LoginPage fragment = new LoginPage();
+    public static SplashScreen newInstance(String param1, String param2) {
+        SplashScreen fragment = new SplashScreen();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -82,17 +80,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_login_page, container, false);
-        userEmail = v.findViewById(R.id.login_userEmail_textbox);
-        password = v.findViewById(R.id.login_password_textbox);
-        Button signIn = v.findViewById(R.id.login_singIn_button);
-        Button register = v.findViewById(R.id.login_register_button);
-        Button resetPassword = v.findViewById(R.id.login_passwordReset_button);
-
-        resetPassword.setOnClickListener(this);
-        signIn.setOnClickListener(this);
-        register.setOnClickListener(this);
-
+        View v = inflater.inflate(R.layout.fragment_splash_screen, container, false);
         final String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
         String sharedPassword = Preferences.getPassword(getContext());
 
@@ -102,14 +90,13 @@ public class LoginPage extends Fragment implements View.OnClickListener {
 
                 try {
                     JSONObject res = new JSONObject(response.toString());
+                    MainActivity mainActivity = (MainActivity) getActivity();
+                    assert mainActivity != null;
                     if(res.has("Success")){
                         String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
 
                         Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
                         Preferences.saveUserId(res.getInt("userId"),Objects.requireNonNull(getContext()));
-
-                        MainActivity mainActivity = (MainActivity) getActivity();
-                        assert mainActivity != null;
 
                         if (!sharedMail.equals("")){
                             mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
@@ -120,44 +107,38 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                         }
                         mainActivity.moveToMap();
                     }  else {
-                        Toast.makeText(getContext(), "Email or password are incorrect", Toast.LENGTH_LONG).show();
+                        mainActivity.mainFragmentManager(new LoginPage());
                     }
                 } catch (Throwable t) {
-                    Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");
+                    t.printStackTrace();
                 }
             }
         };
 
-        if (!sharedMail.equals("") && !sharedPassword.equals(""))
-            Authentication.signIn(getContext(),sharedMail, sharedPassword,  iAsyncResponse);
-        return v;
-    }
-
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.login_singIn_button:
-                String email = userEmail.getText().toString();
-                final String pass = password.getText().toString();
-                if (!email.equals("") && !pass.equals("")) {
-                    new Thread(() -> Authentication.signIn(getContext(),userEmail.getText().toString(), password.getText().toString(),  iAsyncResponse)).start();
-                } else {
-                    Toast.makeText(getContext(), "Hmm...Something is missing...", Toast.LENGTH_LONG).show();
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(getContext());
+                String email = innerDatabaseHandler.getUserEmail();
+                if (!email.equals("")&& !sharedPassword.equals("")){
+                    Authentication.signIn(getContext(), email, sharedPassword, iAsyncResponse);
                 }
-                break;
-            case R.id.login_register_button:
-                new Thread(() -> {
+                if (!sharedMail.equals("") && !sharedPassword.equals(""))
+                    Authentication.signIn(getContext(), sharedMail, sharedPassword, iAsyncResponse);
+                else {
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
-                    mainActivity.mainFragmentManager(new RegisterFragment());
-                }).start();
-                break;
-            case R.id.login_passwordReset_button:
+                    mainActivity.mainFragmentManager(new LoginPage());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
                 MainActivity mainActivity = (MainActivity) getActivity();
                 assert mainActivity != null;
-                mainActivity.mainFragmentManager(new PasswordResetFragment());
-                break;
-        }
+                mainActivity.mainFragmentManager(new LoginPage());
+            }
+        }).start();
+
+        return v;
     }
 }

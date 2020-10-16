@@ -3,8 +3,6 @@ package com.example.thearena.Utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.thearena.Classes.Registration;
-
 import static android.content.Context.MODE_PRIVATE;
 
 public class Preferences {
@@ -16,10 +14,10 @@ public class Preferences {
         editor.apply();
     }
 
-    public static void saveUserId(String userId, Context context){
+    public static void saveUserId(int userId, Context context){
         SharedPreferences newUser = context.getSharedPreferences("userPrefs",MODE_PRIVATE);
         SharedPreferences.Editor editor = newUser.edit();
-        editor.putString("userId", userId);
+        editor.putInt("userId", userId);
         editor.apply();
     }
     public static String getUserId(Context context){

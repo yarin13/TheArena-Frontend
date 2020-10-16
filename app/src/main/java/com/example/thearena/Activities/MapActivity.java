@@ -31,6 +31,7 @@ import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
+import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
@@ -62,7 +63,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
     private String currentUserEmail;
+    //private int currentUserId = Preferences.getUserId(this);
     private Boolean isLoggedIn;
+    private IAsyncResponse currentLoggedInResponse;
+    private User currentLoggedinUser;
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
     private final HashMap<String, User> extraMarkerInfo = new HashMap<>();
     private int threadRequestTiming = 1000 * 60 * 3;
@@ -111,6 +115,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (currentUserEmail.equals("")) {
             currentUserEmail = this.innerDatabaseHandler.getUserEmail();
         }
+
+
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
@@ -192,6 +198,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
                 loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
+                //loggedInUserFullName.setText(String.valueOf(currentUserId));
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
@@ -236,7 +243,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
-        openWhatsApp();
         return false;
     }
 
@@ -309,7 +315,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.MapId);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
-
     }
 
     @Override
@@ -326,12 +331,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
             googleMap.setOnMarkerClickListener(this);
             googleMap.setOnMapClickListener(latLng -> selectedUserNavigationView.setVisibility(View.GONE));
-
         } else
             getLocationPermission();
-
     }
-
 
     private void getDeviceLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -356,15 +358,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onDestroy() {
+        isLoggedIn = false;
+        Authentication.logoff(MapActivity.this, currentUserEmail);
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_logout:
-                //do something..
-                return true;
+                isLoggedIn=false;
+                Authentication.logoff(MapActivity.this, currentUserEmail);
+                MainActivity mainActivity = new MainActivity();
+                mainActivity.mainFragmentManager(new LoginPage());
+                break;
             case R.id.menu_profile:
                 //do something..
-                return true;
-
+                break;
         }
         return true;
     }

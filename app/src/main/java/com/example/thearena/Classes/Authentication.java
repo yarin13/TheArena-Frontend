@@ -3,10 +3,9 @@ package com.example.thearena.Classes;
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.thearena.Interfaces.IAsyncResponse;
@@ -14,7 +13,9 @@ import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Encryption;
 
 import org.json.JSONObject;
+
 import java.util.HashMap;
+import java.util.Map;
 
 public class Authentication {
     /*
@@ -81,29 +82,27 @@ public class Authentication {
         requestManager(context, Constants.AUTH_URL, Request.Method.PUT, iAsyncResponse, map);
     }
 
+    public static void getCurrentUserInfo(final Context context, final int userId, final IAsyncResponse iAsyncResponse) {
+        map.clear();
+        map.put("userId", userId);
+        requestManager(context, Constants.USERINFO_URL, Request.Method.GET, iAsyncResponse, map);
+    }
+
 
     public static void requestManager(final Context context, final String uri, final Integer method, final IAsyncResponse callback, final HashMap<String, Object> paramsToBody) {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
 
         if (paramsToBody.size() != 0) {
-            StringRequest request = new StringRequest(method, uri, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    if (response != null) {
-                        callback.processFinished(response);
-                    }
-
+            StringRequest request = new StringRequest(method, uri, response -> {
+                if (response != null) {
+                    callback.processFinished(response);
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.d("Error", "onErrorResponse: " + error);
-                }
-            }) {
+            }, error -> Log.d("Error", "onErrorResponse: " + error)) {
                 @Override
                 public String getBodyContentType() {
                     return "application/json";
                 }
+
                 @Override
                 public byte[] getBody() {
                     JSONObject body = new JSONObject();
@@ -121,7 +120,7 @@ public class Authentication {
                                         body.put("interestedIn", paramsToBody.get("userInterestedIn"));
                                         body.put("score", String.valueOf(paramsToBody.get("userScore")));
                                         body.put("password", paramsToBody.get("userPassword"));
-                                    }else{
+                                    } else {
                                         body.put("email", paramsToBody.get("email"));
                                         body.put("password", paramsToBody.get("password"));
                                     }
@@ -149,6 +148,14 @@ public class Authentication {
                         Log.d("GET-BODY ERROR!", "getBody: " + e.getMessage());
                     }
                     return "".getBytes();
+                }
+
+                @Override
+                public Map<String, String> getHeaders(){
+                    Map<String, String> params = new HashMap<>();
+                    if (uri.equals(Constants.USERINFO_URL))
+                        params.put("userId", String.valueOf(paramsToBody.get("userId")));
+                    return params;
                 }
             };
             requestQueue.getCache().clear();

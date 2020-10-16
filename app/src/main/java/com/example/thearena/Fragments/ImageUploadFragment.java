@@ -208,7 +208,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
             UploadApis uploadApis = retrofit.create(UploadApis.class);
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("newPhoto", file.getName(), requestFile);
-            RequestBody userId = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getUserId(getContext()));
+            RequestBody userId = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getUserId(Objects.requireNonNull(getContext())));
             Call call = uploadApis.uploadImage(body, userId);
             call.enqueue(new Callback() {
                 @Override

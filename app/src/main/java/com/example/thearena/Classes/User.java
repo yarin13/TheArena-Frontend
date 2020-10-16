@@ -1,8 +1,14 @@
 package com.example.thearena.Classes;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+import com.example.thearena.Interfaces.IAsyncResponse;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.HashMap;
 
 public class User {
 //-----------according to database---------------------
