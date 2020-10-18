@@ -82,7 +82,7 @@ public class Authentication {
         requestManager(context, Constants.AUTH_URL, Request.Method.PUT, iAsyncResponse, map);
     }
 
-    public static void getCurrentUserInfo(final Context context, final int userId, final IAsyncResponse iAsyncResponse) {
+    public static void getCurrentUserInfo(final Context context, final String userId, final IAsyncResponse iAsyncResponse) {
         map.clear();
         map.put("userId", userId);
         requestManager(context, Constants.USERINFO_URL, Request.Method.GET, iAsyncResponse, map);
@@ -152,10 +152,12 @@ public class Authentication {
 
                 @Override
                 public Map<String, String> getHeaders(){
-                    Map<String, String> params = new HashMap<>();
-                    if (uri.equals(Constants.USERINFO_URL))
+                    if (uri.equals(Constants.USERINFO_URL)){
+                        HashMap<String,String> params = new HashMap<>();
                         params.put("userId", String.valueOf(paramsToBody.get("userId")));
-                    return params;
+                        return params;
+                    }
+                    return new HashMap<>();
                 }
             };
             requestQueue.getCache().clear();

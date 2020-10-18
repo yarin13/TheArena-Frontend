@@ -106,7 +106,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                         String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
 
                         Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
-                        Preferences.saveUserId(res.getInt("userId"),Objects.requireNonNull(getContext()));
+                        Preferences.saveUserId(res.getString("userId"),Objects.requireNonNull(getContext()));
 
                         MainActivity mainActivity = (MainActivity) getActivity();
                         assert mainActivity != null;

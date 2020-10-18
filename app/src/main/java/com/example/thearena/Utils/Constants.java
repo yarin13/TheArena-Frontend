@@ -23,7 +23,7 @@ public class Constants {
     public static final String AUTH_URL = "http://10.0.2.2:8080/TheArenaServlet/Authentication";
     public static final String ONLINE_USER_LOCATION = "http://10.0.2.2:8080/TheArenaServlet/onlineUsersLocation";
     public static final String PHOTOS_URL = "http://10.0.2.2:8080/TheArenaServlet/PhotosServlet";
-    public static final String USERINFO_URL = "http://localhost:8080/TheArenaServlet/UserServlet";
+    public static final String USERINFO_URL = "http://10.0.2.2:8080/TheArenaServlet/UserServlet";
 
     //inner Database
     public static final int DATABASE_VERSION = 1;

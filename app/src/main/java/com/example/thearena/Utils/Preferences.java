@@ -14,10 +14,10 @@ public class Preferences {
         editor.apply();
     }
 
-    public static void saveUserId(int userId, Context context){
+    public static void saveUserId(String userId, Context context){
         SharedPreferences newUser = context.getSharedPreferences("userPrefs",MODE_PRIVATE);
         SharedPreferences.Editor editor = newUser.edit();
-        editor.putInt("userId", userId);
+        editor.putString("userId", userId);
         editor.apply();
     }
     public static String getUserId(Context context){

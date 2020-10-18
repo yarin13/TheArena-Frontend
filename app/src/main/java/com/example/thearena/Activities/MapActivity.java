@@ -63,10 +63,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FusedLocationProviderClient fusedLocationClient;
     private Boolean LocationPermissionGranted;
     private String currentUserEmail;
-    //private int currentUserId = Preferences.getUserId(this);
     private Boolean isLoggedIn;
     private IAsyncResponse currentLoggedInResponse;
-    private User currentLoggedinUser;
+    private User currentLoggedInUser;
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
     private final HashMap<String, User> extraMarkerInfo = new HashMap<>();
     private int threadRequestTiming = 1000 * 60 * 3;
@@ -77,7 +76,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private TextView loggedInUserFullName;
 
     private NavigationView selectedUserNavigationView;
-    private ActionBarDrawerToggle selectedUserActionBarDrawerToggle;
     private ImageView selectedUserProfilePic;
     private TextView selectedUserFullName;
     private User selectedUser;
@@ -87,11 +85,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
         isLoggedIn = true;
+        currentLoggedInUser = new User();
 
         //Find view's by Id:
-
         selectedUserNavigationView = findViewById(R.id.secNavigationView);
         drawerLayout = findViewById(R.id.drawer);
         navigationView = findViewById(R.id.navigationView);
@@ -100,9 +97,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         floatingActionButton.setAlpha(0.50f);
         floatingActionButton.setOnClickListener(view -> drawerLayout.openDrawer(Gravity.RIGHT));
 
+        //Get LoggedIn user Info:
+        Authentication.getCurrentUserInfo(this,Preferences.getUserId(this),currentLoggedInResponse);
+
         //setActionBarsDrawable - setting all action bars related stuff:
         setActionBarsDrawable();
-
         //Location related stuff:
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -116,7 +115,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             currentUserEmail = this.innerDatabaseHandler.getUserEmail();
         }
 
+        currentLoggedInResponse = new IAsyncResponse() {
+            @Override
+            public <T> void processFinished(T response) {
+                try {
+                    JSONObject res = new JSONObject(response.toString());
+                    if(res.has("age")){
+                        currentLoggedInUser.setFirstName(res.getString("firstName"));
+                        currentLoggedInUser.setLastName(res.getString("lastName"));
+                        currentLoggedInUser.setUserEmail(res.getString("email"));
+                        currentLoggedInUser.setUserAge(res.getInt("age"));
+                        currentLoggedInUser.setUserGender(res.getString("gender"));
+                        currentLoggedInUser.setUserInterestedIn(res.getString("interestedIn"));
+                        currentLoggedInUser.setUserPhoneNumber(res.getString("phoneNumber"));
 
+
+                    }
+                } catch (Throwable t) {
+                    Log.d(TAG, "processFinished: "+t.getMessage());
+                }
+            }
+        };
 
         iAsyncResponse = new IAsyncResponse() {
             @Override
@@ -185,20 +204,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void openWhatsApp(){
-        String url = "https://api.whatsapp.com/send?phone="+selectedUser.getUserPhoneNumber();
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse(url));
-        startActivity(i);
-    }
-
     private void setActionBarsDrawable() {
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
                 loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
-                //loggedInUserFullName.setText(String.valueOf(currentUserId));
+                loggedInUserFullName.setText(currentLoggedInUser.getFirstName() +" "+ currentLoggedInUser.getLastName());
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
@@ -206,25 +218,38 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
             }
         };
-        selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
-                selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
-                selectedUserFullName.setText(selectedUser.getFirstName() + " "+ selectedUser.getLastName());
-                GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
-                        .addHeader("action", "getProfilePhoto")
-                        .addHeader("userId", String.valueOf(selectedUser.getUserId()))
-                        .build());
-                Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
-            }
-        };
+//        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//                //selectedUserFullName.setText(selectedUser.getFirstName() + " " + selectedUser.getLastName());
+//                selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
+//                selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
+//                GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+//                        .addHeader("action", "getProfilePhoto")
+//                        .addHeader("userId", String.valueOf(selectedUser.getUserId()))
+//                        .build());
+//                Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
+//            }
+//        };
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
-        selectedUserNavigationView.setNavigationItemSelectedListener(this);
         navigationView.setNavigationItemSelectedListener(this);
+
+//        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
+//        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+//        selectedUserActionBarDrawerToggle.syncState();
+//        selectedUserNavigationView.setNavigationItemSelectedListener(this);
     }
+
+    private void openWhatsApp(){
+        String url = "https://api.whatsapp.com/send?phone="+selectedUser.getUserPhoneNumber();
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+
 
 
     private void createMarker(GoogleMap map, User user) {

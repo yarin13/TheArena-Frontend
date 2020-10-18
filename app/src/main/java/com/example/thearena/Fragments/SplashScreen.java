@@ -87,26 +87,25 @@ public class SplashScreen extends Fragment {
         iAsyncResponse = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
-
                 try {
                     JSONObject res = new JSONObject(response.toString());
                     MainActivity mainActivity = (MainActivity) getActivity();
                     assert mainActivity != null;
-                    if(res.has("Success")){
+                    if (res.has("Success")) {
                         String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
 
                         Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
-                        Preferences.saveUserId(res.getInt("userId"),Objects.requireNonNull(getContext()));
+                        Preferences.saveUserId(res.getString("userId"), Objects.requireNonNull(getContext()));
 
-                        if (!sharedMail.equals("")){
+                        if (!sharedMail.equals("")) {
                             mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
-                        }else if (!userEmail.getText().toString().equals("")){
+                        } else if (!userEmail.getText().toString().equals("")) {
                             mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
-                        }else {
+                        } else {
                             return;
                         }
                         mainActivity.moveToMap();
-                    }  else {
+                    } else {
                         mainActivity.mainFragmentManager(new LoginPage());
                     }
                 } catch (Throwable t) {
@@ -115,29 +114,18 @@ public class SplashScreen extends Fragment {
             }
         };
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(2000);
-                InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(getContext());
-                String email = innerDatabaseHandler.getUserEmail();
-                if (!email.equals("")&& !sharedPassword.equals("")){
-                    Authentication.signIn(getContext(), email, sharedPassword, iAsyncResponse);
-                }
-                if (!sharedMail.equals("") && !sharedPassword.equals(""))
-                    Authentication.signIn(getContext(), sharedMail, sharedPassword, iAsyncResponse);
-                else {
-                    MainActivity mainActivity = (MainActivity) getActivity();
-                    assert mainActivity != null;
-                    mainActivity.mainFragmentManager(new LoginPage());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                MainActivity mainActivity = (MainActivity) getActivity();
-                assert mainActivity != null;
-                mainActivity.mainFragmentManager(new LoginPage());
-            }
-        }).start();
+
+        InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(getContext());
+        String email = innerDatabaseHandler.getUserEmail();
+        if (!email.equals("") && !sharedPassword.equals("")) {
+            Authentication.signIn(getContext(), email, sharedPassword, iAsyncResponse);
+        } else if (!sharedMail.equals("") && !sharedPassword.equals(""))
+            Authentication.signIn(getContext(), sharedMail, sharedPassword, iAsyncResponse);
+        else {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            assert mainActivity != null;
+            mainActivity.mainFragmentManager(new LoginPage());
+        }
 
         return v;
     }
