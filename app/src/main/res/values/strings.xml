@@ -31,4 +31,7 @@
     <string name="close">close</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="whatsapp">WhatsApp</string>
+    <string name="block">Block</string>
+    <string name="profile_picture">Profile picture</string>
 </resources>

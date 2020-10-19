@@ -5,7 +5,16 @@
         android:icon="@drawable/ic_settings"
         android:title="Settings"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/upload_image"
+        android:icon="@drawable/ic_baseline_add_a_photo"
+        android:title="Add new image"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/upload_profile_image"
+        android:icon="@drawable/ic_baseline_cloud_upload"
+        android:title="Upload new profile image"
+        app:showAsAction="never" />
     <item
         android:id="@+id/menu_logout"
         android:icon="@drawable/ic_log_out"

@@ -43,7 +43,6 @@ public class LoginPage extends Fragment implements View.OnClickListener {
     private IAsyncResponse iAsyncResponse;
 
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
@@ -59,7 +58,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
      * @param param2 Parameter 2.
      * @return A new instance of fragment LoginPage.
      */
-    // TODO: Rename and change types and number of parameters
+
     public static LoginPage newInstance(String param1, String param2) {
         LoginPage fragment = new LoginPage();
         Bundle args = new Bundle();
@@ -93,7 +92,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         signIn.setOnClickListener(this);
         register.setOnClickListener(this);
 
-        String sharedMail = Preferences.getMail(getContext());
+        String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
         String sharedPassword = Preferences.getPassword(getContext());
 
         iAsyncResponse = new IAsyncResponse() {
@@ -111,17 +110,9 @@ public class LoginPage extends Fragment implements View.OnClickListener {
                         }
                         MainActivity mainActivity = (MainActivity) getActivity();
                         assert mainActivity != null;
-                        Log.d("TAG", String.valueOf(res)+"1");
-//                        if (!sharedMail.equals("")){
-//                            mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
-//                        }else if (!userEmail.getText().toString().equals("")){
-//                            mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
-//                        }else {
-//                            return;
-//                        }
                         mainActivity.moveToMap();
                     }  else {
-                        Log.d("TAG", "Faild "+response);
+                        Log.d("TAG", "Failed "+response);
                     }
                 } catch (Throwable t) {
                     Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");

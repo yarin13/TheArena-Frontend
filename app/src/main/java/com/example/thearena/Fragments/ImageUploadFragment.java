@@ -91,12 +91,12 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
     private Boolean storagePermissionGranted = false;
     private Boolean cameraPermissionGranted = false;
 
-    // TODO: Rename parameter arguments, choose names that match
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
+
     private String mParam1;
     private String mParam2;
 
@@ -176,7 +176,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    private void checkCameraPermissions() {
+    public void checkCameraPermissions() {
         for (int i = 0; i < 2; i++) {
             if (cameraPermissionGranted) {
                 // Create the camera_intent ACTION_IMAGE_CAPTURE
@@ -187,18 +187,18 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                 startActivityForResult(camera_intent, Constants.PICTURE_PERMISSION__REQUEST_CODE);
                 break;
             } else {
-                requestCameraPermissions(getActivity());
+                requestCameraPermissions(Objects.requireNonNull(getActivity()));
             }
         }
     }
 
-    private void requestCameraPermissions(Activity activity) {
+    public void requestCameraPermissions(Activity activity) {
         String[] PERMISSIONS = {
                 Manifest.permission.CAMERA
         };
         activity.requestPermissions(PERMISSIONS, Constants.PICTURE_PERMISSION__REQUEST_CODE);
 
-        if (ContextCompat.checkSelfPermission(getContext(), Constants.CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Constants.CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
             cameraPermissionGranted = true;
         }
     }
@@ -211,7 +211,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    private void sendImageToServer() {
+    public void sendImageToServer() {
         if (file != null) {
             Retrofit retrofit = NetworkClient.getRetrofit();
             UploadApis uploadApis = retrofit.create(UploadApis.class);
@@ -235,7 +235,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
 
     }
 
-    private void selectImageFromGallery() {
+    public void selectImageFromGallery() {
         if (storagePermissionGranted) {
             Intent intent = new Intent();
             intent.setType("image/*");                      //allow to select any kind of images
@@ -258,6 +258,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
             imageView.setTag(0);
             Uri selectedFileURI = data.getData();
             String fullPath = getPath(getContext(), selectedFileURI);
+            assert fullPath != null;
             file = new File(fullPath);
         }else if(requestCode == Constants.PICTURE_PERMISSION__REQUEST_CODE && resultCode == RESULT_OK && data != null){
             // BitMap is data structure of image file which save the image in memory
@@ -271,7 +272,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
     @Nullable
     public static String getPath(Context context, Uri uri) {
         // DocumentProvider
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -289,7 +290,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                     }
                     try {
                         final Uri contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                                Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
                         return getDataColumn(context, contentUri, null, null);
                     } catch (NumberFormatException e) {
                         return null;
@@ -372,11 +373,11 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
     }
 
     public void checkStoragePermissions() {
-        if (ContextCompat.checkSelfPermission(getContext(), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             storagePermissionGranted = true;
         } else {
             storagePermissionGranted = false;
-            requestStoragePermission(getActivity());
+            requestStoragePermission(Objects.requireNonNull(getActivity()));
         }
     }
 
@@ -386,7 +387,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         };
         activity.requestPermissions(PERMISSIONS_STORAGE, Constants.REQUEST_EXTERNAL_STORAGE);
 
-        if (ContextCompat.checkSelfPermission(getContext(), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Constants.READ_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             storagePermissionGranted = true;
         }
 

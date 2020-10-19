@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,13 +25,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager2.widget.ViewPager2;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.thearena.Classes.Authentication;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
+import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
@@ -50,9 +58,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener {
@@ -75,10 +87,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private NavigationView navigationView;
     private ImageView drawerProfilePic;
     private TextView loggedInUserFullName;
+    private TextView loggedInUserAge;
 
     private NavigationView selectedUserNavigationView;
     private ImageView selectedUserProfilePic;
-    private TextView selectedUserFullName;
+    private TextView selectedUserFirstName;
+    private TextView selectedUserLastName;
+    private TextView selectedUserage;
+    private JSONArray selectedUserPhotosId;
+    private Button whatsAppBtn;
+    private Button blockBtn;
     private User selectedUser;
 
 
@@ -99,8 +117,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         //setActionBarsDrawable - setting all action bars related stuff:
         setActionBarsDrawable();
-
-
 
         //Location related stuff:
 
@@ -141,14 +157,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-
     private void setActionBarsDrawable() {
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
+                loggedInUserAge = findViewById(R.id.drawerHeaderUserAge);
                 loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
                 loggedInUserFullName.setText(currentLoggedInUser.getFirstName() + " " + currentLoggedInUser.getLastName());
+                loggedInUserAge.setText(String.valueOf(currentLoggedInUser.getUserAge()));
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
@@ -194,25 +211,76 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         extraMarkerInfo.put(marker.getId(), user);
     }
 
+
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
+        getPhotosId();
         if (selectedUser != null) {
+
             selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
-            selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
-            selectedUserFullName.setText(selectedUser.getFirstName() + " " + selectedUser.getLastName());
+            selectedUserFirstName = findViewById(R.id.sec_drawerHeaderUserFirstName);
+            selectedUserLastName = findViewById(R.id.sec_drawerHeaderUserLastName);
+            selectedUserage = findViewById(R.id.sec_drawerHeaderUserAge);
+            whatsAppBtn = findViewById(R.id.selected_user_whatsApp_button);
+            blockBtn = findViewById(R.id.selected_user_block_button);
+
+            selectedUserFirstName.setText(selectedUser.getFirstName());
+            selectedUserLastName.setText(selectedUser.getLastName());
+            selectedUserage.setText(String.valueOf(selectedUser.getUserAge()));
+
+            whatsAppBtn.setOnClickListener(v -> openWhatsApp());
+            blockBtn.setOnClickListener(v -> Toast.makeText(this, "Block is for subscribed users only", Toast.LENGTH_LONG).show());
+
             GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                     .addHeader("action", "getProfilePhoto")
                     .addHeader("userId", String.valueOf(selectedUser.getUserId()))
                     .build());
-            Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
+
+            Glide.with(MapActivity.this)
+                    .load(glideUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .into(selectedUserProfilePic);
+
             drawerLayout.openDrawer(Gravity.LEFT);
         }
 
         return false;
     }
 
-//
+    private void getPhotosId() {
+        new Thread(() -> {
+            RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.PHOTOS_URL, listener -> {
+                try {
+                    JSONObject object = new JSONObject(listener);
+                    if (listener.contains(selectedUser.getUserEmail())){
+                        selectedUserPhotosId = object.getJSONArray(selectedUser.getUserEmail());
+
+                        for (int i = 0; i < selectedUserPhotosId.length(); i++){
+                            //TODO: Need to check how to use Glide here........
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }, error -> {
+                Log.d(TAG, error.getMessage());
+            }) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    HashMap<String, String> params = new HashMap<>();
+                    params.put("action", "getPhotosIds");
+                    params.put("email", selectedUser.getUserEmail());
+                    return params;
+                }
+            };
+            requestQueue.getCache().clear();
+            requestQueue.add(stringRequest);
+        }).start();
+
+    }
 
     private void getLocationPermission() {
         /*
@@ -348,6 +416,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_logout:
+                map.clear();
                 isLoggedIn = false;
                 Authentication.logoff(this, currentUserEmail);
                 MainActivity mainActivity = new MainActivity();
@@ -356,9 +425,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case R.id.menu_profile:
                 //do something..
                 break;
+            case R.id.upload_image:
+                break;
+            case R.id.upload_profile_image:
+//                ImageUploadFragment imageUploadFragment = new ImageUploadFragment();
+//                imageUploadFragment.selectImageFromGallery();
+                break;
         }
         return true;
     }
+
     private void getMatches() {
         iAsyncResponse = new IAsyncResponse() {
             @Override
@@ -426,87 +502,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             //  }
         }).start();
     }
-
-
-    //========================================================================================================================================
-//private void getProfilePic(User user, int userId) {
-//    Retrofit retrofit = NetworkClient.getRetrofit();
-//    UploadApis uploadApis = retrofit.create(UploadApis.class);
-//    Call<ResponseBody> call = uploadApis.getImage("getProfilePhoto", userId);
-//    call.enqueue(new Callback<ResponseBody>() {
-//        @Override
-//        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//            if (response.isSuccessful()) {
-//                if (response.body() != null) {
-////                        ResponseBody in = response.body();
-////                        InputStream inputStream = in.byteStream();
-////                        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-////                        Bitmap bmp=BitmapFactory.decodeStream(bufferedInputStream);
-//
-//                    // display the image data in a ImageView or save it
-//                    Bitmap bmp = BitmapFactory.decodeStream(response.body().byteStream());
-//                    user.setProfilePic(bmp);
-//                    Log.d("Testingg", "getProfilePic bmp: " + bmp);
-//                    createMenu(map, user);
-//                } else {
-//                    // TODO
-//                }
-//            } else {
-//                // TODO
-//            }
-//        }
-//
-//        @Override
-//        public void onFailure(Call<ResponseBody> call, Throwable t) {
-//            // TODO
-//        }
-//    });
-//}
-
-//========================================================================================================================================
-    //        menuBtn.setOnClickListener(new View.OnClickListener() {
-//            @SuppressLint("UseCompatLoadingForDrawables")
-//            @Override
-//            public void onClick(View view) {
-//                if (menuBtn.getContentDescription().equals("menu")) {
-//                    Snackbar.make(view, "Opening....", Snackbar.LENGTH_LONG)
-//                            .setBackgroundTint(getColor(R.color.colorPrimary))
-//                            .setAction("Action", null).show();
-//
-//                    menuBtn.setContentDescription("close");
-//                    menuBtn.setImageDrawable(getDrawable(R.drawable.baseline_close_24));
-//                }else {
-//                    Snackbar.make(view, "closing....", Snackbar.LENGTH_LONG)
-//                            .setAction("Action", null).show();
-//
-//                    menuBtn.setContentDescription("menu");
-//                    menuBtn.setImageDrawable(getDrawable(R.drawable.baseline_menu_24));
-//
-//                }
-//            }
-//        });
-//private void selectedUserDrawer(User selectedUserOne) {
-//        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
-//            @Override
-//            public void onDrawerOpened(View drawerView) {
-//                if (selectedUserOne != null) {
-//                    selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
-//                    selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
-//                    Log.d(TAG, "onDrawerOpened: " + selectedUserOne.getFirstName());
-//                    selectedUserFullName.setText(selectedUserOne.getFirstName() + " " + selectedUserOne.getLastName());
-//                    GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
-//                            .addHeader("action", "getProfilePhoto")
-//                            .addHeader("userId", String.valueOf(selectedUserOne.getUserId()))
-//                            .build());
-//                    Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
-//                }
-//            }
-//        };
-//
-//        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
-//        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
-//        selectedUserActionBarDrawerToggle.syncState();
-//        selectedUserNavigationView.setNavigationItemSelectedListener(this);
-//    }
 
 }
