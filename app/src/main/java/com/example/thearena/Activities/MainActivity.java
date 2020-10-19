@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
-import com.example.thearena.Fragments.SplashScreen;
+//import com.example.thearena.Fragments.SplashScreen;
 import com.example.thearena.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
                 // Log.d("savedInstanceState", "onCreate: ");
                 return;
             }
-            mainFragmentManager(new SplashScreen());
+            mainFragmentManager(new LoginPage());
             //      mainFragmentManager(new ImageUploadFragment());
 
         }

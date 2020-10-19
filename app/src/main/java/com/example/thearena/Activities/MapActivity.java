@@ -69,6 +69,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public InnerDatabaseHandler innerDatabaseHandler = new InnerDatabaseHandler(MapActivity.this);
     private final HashMap<String, User> extraMarkerInfo = new HashMap<>();
     private int threadRequestTiming = 1000 * 60 * 3;
+    private int timeout = 3000;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -87,21 +88,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
         isLoggedIn = true;
         currentLoggedInUser = new User();
-
         //Find view's by Id:
-        selectedUserNavigationView = findViewById(R.id.secNavigationView);
         drawerLayout = findViewById(R.id.drawer);
         navigationView = findViewById(R.id.navigationView);
+        selectedUserNavigationView = findViewById(R.id.secNavigationView);
 
         FloatingActionButton floatingActionButton = findViewById(R.id.mapFloatingButton);
         floatingActionButton.setAlpha(0.50f);
         floatingActionButton.setOnClickListener(view -> drawerLayout.openDrawer(Gravity.RIGHT));
 
-        //Get LoggedIn user Info:
-        Authentication.getCurrentUserInfo(this,Preferences.getUserId(this),currentLoggedInResponse);
-
         //setActionBarsDrawable - setting all action bars related stuff:
         setActionBarsDrawable();
+
+
+
         //Location related stuff:
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -110,17 +110,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         String provider = locationManager.getBestProvider(criteria, false);
         getLocationPermission();
 
-        currentUserEmail = Preferences.getMail(getBaseContext());
-        if (currentUserEmail.equals("")) {
-            currentUserEmail = this.innerDatabaseHandler.getUserEmail();
-        }
+        currentUserEmail = Preferences.getMail(this);
+//        if (currentUserEmail.equals("")) {
+//            currentUserEmail = this.innerDatabaseHandler.getUserEmail();
+//        }
 
         currentLoggedInResponse = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
                 try {
                     JSONObject res = new JSONObject(response.toString());
-                    if(res.has("age")){
+                    if (res.has("age")) {
                         currentLoggedInUser.setFirstName(res.getString("firstName"));
                         currentLoggedInUser.setLastName(res.getString("lastName"));
                         currentLoggedInUser.setUserEmail(res.getString("email"));
@@ -128,81 +128,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         currentLoggedInUser.setUserGender(res.getString("gender"));
                         currentLoggedInUser.setUserInterestedIn(res.getString("interestedIn"));
                         currentLoggedInUser.setUserPhoneNumber(res.getString("phoneNumber"));
-
-
                     }
                 } catch (Throwable t) {
-                    Log.d(TAG, "processFinished: "+t.getMessage());
+                    Log.d(TAG, "processFinished: " + t.getMessage());
                 }
             }
         };
 
-        iAsyncResponse = new IAsyncResponse() {
-            @Override
-            public <T> void processFinished(T response) {
-                /*
-                This processFinished method is a callback function...
-                Once she had a response it convert it to Map Marker.
-                for now we do not need userArrayList - but maybe in the future we will need to use it to grab images from the server.
-                 */
-                if (!response.equals("[{\"Error\":\"No one else was found\"}]") && !response.equals("")) {
-                    try {
-                        JSONArray jsonArray = new JSONArray(response.toString());
-                        JSONObject jsonObject = jsonArray.getJSONObject(0);
-                        JSONArray keys = jsonObject.names();
-                        extraMarkerInfo.clear();
-                        for (int i = 0; i < keys.length(); i++) {
-                            User user = new User();
-                            String id = keys.getString(i);
-                            JSONArray value = jsonObject.getJSONArray(id);
-                            user.setUserId(Integer.parseInt(id));
-                            user.setFirstName(value.getString(0));
-                            user.setLastName(value.getString(1));
-                            user.setUserEmail(value.getString(2));
-                            user.setUserPhoneNumber(value.getString(3));
-                            user.setUserAge(value.getInt(4));
-                            user.setUserLatitude(value.getDouble(5));
-                            user.setUserLongitude(value.getDouble(6));
-
-                            createMarker(map, user);
-                        }
-
-                    } catch (Exception e) {
-                        Log.d(TAG, "processFinished: " + e);
-                    }
-
-                } else
-                    Toast.makeText(MapActivity.this, "look like there in no one here", Toast.LENGTH_LONG).show();
-            }
-        };
-
-        new Thread(() -> {
-            /*
-            This is a Thread that run all the life of the application,
-            during his running his send the current location under 2 circumstance :
-                1. currentUserEmail must not be null or empty String.
-                2. isLoggedIn must be true - when using the onStop method: isLoggedIn become false, ans prevent this Thread to run endlessly.
-             */
-            while (true) {
-                try {
-                    if (isLoggedIn && !currentUserEmail.equals("")) {
-                        //Thread.sleep(threadRequestTiming); --------------> Wait 5 minutes between every update request.
-                        Thread.sleep(10000);
-                        Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, iAsyncResponse);
-                    } else if (currentUserEmail.equals("")) {
-                        currentUserEmail = Preferences.getMail(getApplicationContext());
-                        break;
-                    }
-                    //remove the break for thread to run forever
-                    //break;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        //Get LoggedIn user Info:
+        Authentication.getCurrentUserInfo(this, Preferences.getUserId(this), currentLoggedInResponse);
 
     }
+
+
 
     private void setActionBarsDrawable() {
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
@@ -210,7 +148,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
                 loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
-                loggedInUserFullName.setText(currentLoggedInUser.getFirstName() +" "+ currentLoggedInUser.getLastName());
+                loggedInUserFullName.setText(currentLoggedInUser.getFirstName() + " " + currentLoggedInUser.getLastName());
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
@@ -218,38 +156,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
             }
         };
-//        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
-//            @Override
-//            public void onDrawerOpened(View drawerView) {
-//                //selectedUserFullName.setText(selectedUser.getFirstName() + " " + selectedUser.getLastName());
-//                selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
-//                selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
-//                GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
-//                        .addHeader("action", "getProfilePhoto")
-//                        .addHeader("userId", String.valueOf(selectedUser.getUserId()))
-//                        .build());
-//                Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
-//            }
-//        };
+        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+        };
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-//        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
-//        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
-//        selectedUserActionBarDrawerToggle.syncState();
-//        selectedUserNavigationView.setNavigationItemSelectedListener(this);
+        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
+        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+        selectedUserActionBarDrawerToggle.syncState();
+        selectedUserNavigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void openWhatsApp(){
-        String url = "https://api.whatsapp.com/send?phone="+selectedUser.getUserPhoneNumber();
+    private void openWhatsApp() {
+        String url = "https://api.whatsapp.com/send?phone=" + selectedUser.getUserPhoneNumber();
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         startActivity(i);
     }
-
-
 
 
     private void createMarker(GoogleMap map, User user) {
@@ -259,7 +188,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         if (user.getProfilePic() != null) {
             marker.setIcon(BitmapDescriptorFactory.fromBitmap(user.getProfilePic()));
-        }else{
+        } else {
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         }
         extraMarkerInfo.put(marker.getId(), user);
@@ -268,8 +197,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
+        if (selectedUser != null) {
+            selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
+            selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
+            selectedUserFullName.setText(selectedUser.getFirstName() + " " + selectedUser.getLastName());
+            GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+                    .addHeader("action", "getProfilePhoto")
+                    .addHeader("userId", String.valueOf(selectedUser.getUserId()))
+                    .build());
+            Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
+            drawerLayout.openDrawer(Gravity.LEFT);
+        }
+
         return false;
     }
+
+//
 
     private void getLocationPermission() {
         /*
@@ -353,9 +296,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 return;
             }
             map.setMyLocationEnabled(true);
-            new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
+
             googleMap.setOnMarkerClickListener(this);
             googleMap.setOnMapClickListener(latLng -> selectedUserNavigationView.setVisibility(View.GONE));
+            new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
         } else
             getLocationPermission();
     }
@@ -376,7 +320,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onPostResume() {
+        currentUserEmail = Preferences.getMail(this);
+        isLoggedIn = true;
+        new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
+        getMatches();
+        super.onPostResume();
+    }
+
+    @Override
     protected void onStop() {
+        map.clear();
         isLoggedIn = false;
         Authentication.logoff(MapActivity.this, currentUserEmail);
         super.onStop();
@@ -384,8 +338,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
+        map.clear();
         isLoggedIn = false;
-        Authentication.logoff(MapActivity.this, currentUserEmail);
+        Authentication.logoff(this, currentUserEmail);
         super.onDestroy();
     }
 
@@ -393,8 +348,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_logout:
-                isLoggedIn=false;
-                Authentication.logoff(MapActivity.this, currentUserEmail);
+                isLoggedIn = false;
+                Authentication.logoff(this, currentUserEmail);
                 MainActivity mainActivity = new MainActivity();
                 mainActivity.mainFragmentManager(new LoginPage());
                 break;
@@ -403,6 +358,73 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 break;
         }
         return true;
+    }
+    private void getMatches() {
+        iAsyncResponse = new IAsyncResponse() {
+            @Override
+            public <T> void processFinished(T response) {
+                /*
+                This processFinished method is a callback function...
+                Once she had a response it convert it to Map Marker.
+                for now we do not need userArrayList - but maybe in the future we will need to use it to grab images from the server.
+                 */
+                if (!response.equals("[{\"Error\":\"No one else was found\"}]") && !response.equals("")) {
+                    try {
+                        JSONArray jsonArray = new JSONArray(response.toString());
+                        JSONObject jsonObject = jsonArray.getJSONObject(0);
+                        JSONArray keys = jsonObject.names();
+                        extraMarkerInfo.clear();
+                        for (int i = 0; i < keys.length(); i++) {
+                            User user = new User();
+                            String id = keys.getString(i);
+                            JSONArray value = jsonObject.getJSONArray(id);
+                            user.setUserId(Integer.parseInt(id));
+                            user.setFirstName(value.getString(0));
+                            user.setLastName(value.getString(1));
+                            user.setUserEmail(value.getString(2));
+                            user.setUserPhoneNumber(value.getString(3));
+                            user.setUserAge(value.getInt(4));
+                            user.setUserLatitude(value.getDouble(5));
+                            user.setUserLongitude(value.getDouble(6));
+                            createMarker(map, user);
+                        }
+
+                    } catch (Exception e) {
+                        Log.d(TAG, "processFinished: " + e);
+                    }
+
+                } else
+                    Toast.makeText(MapActivity.this, "look like there in no one here", Toast.LENGTH_LONG).show();
+            }
+        };
+
+
+        new Thread(() -> {
+            /*
+            This is a Thread that run all the life of the application,
+            during his running his send the current location under 2 circumstance :
+                1. currentUserEmail must not be null or empty String.
+                2. isLoggedIn must be true - when using the onStop method: isLoggedIn become false, ans prevent this Thread to run endlessly.
+             */
+            // while (true) {
+            try {
+                if (isLoggedIn && !currentUserEmail.equals("")) {
+                    //Thread.sleep(threadRequestTiming); --------------> Wait 5 minutes between every update request.
+                    Thread.sleep(timeout);
+                    Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, iAsyncResponse);
+
+                } else if (currentUserEmail.equals("")) {
+                    currentUserEmail = Preferences.getMail(getApplicationContext());
+                    //   break;
+                }
+                //remove the break for thread to run forever
+                //break;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //  }
+        }).start();
     }
 
 
@@ -463,5 +485,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //                }
 //            }
 //        });
+//private void selectedUserDrawer(User selectedUserOne) {
+//        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//                if (selectedUserOne != null) {
+//                    selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
+//                    selectedUserFullName = findViewById(R.id.sec_drawerHeaderUserName);
+//                    Log.d(TAG, "onDrawerOpened: " + selectedUserOne.getFirstName());
+//                    selectedUserFullName.setText(selectedUserOne.getFirstName() + " " + selectedUserOne.getLastName());
+//                    GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
+//                            .addHeader("action", "getProfilePhoto")
+//                            .addHeader("userId", String.valueOf(selectedUserOne.getUserId()))
+//                            .build());
+//                    Glide.with(MapActivity.this).load(glideUrl).into(selectedUserProfilePic);
+//                }
+//            }
+//        };
+//
+//        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
+//        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+//        selectedUserActionBarDrawerToggle.syncState();
+//        selectedUserNavigationView.setNavigationItemSelectedListener(this);
+//    }
 
 }

@@ -94,10 +94,15 @@ public class Authentication {
 
         if (paramsToBody.size() != 0) {
             StringRequest request = new StringRequest(method, uri, response -> {
-                if (response != null) {
-                    callback.processFinished(response);
+                if (!response.equals(null) && response != null) {
+                    if(callback != null)
+                        callback.processFinished(String.valueOf(response));
                 }
-            }, error -> Log.d("Error", "onErrorResponse: " + error)) {
+            }, error -> {
+                if(callback != null)
+                    callback.processFinished("{\"unSuccess\":\"unSuccess\"}");
+            })
+            {
                 @Override
                 public String getBodyContentType() {
                     return "application/json";

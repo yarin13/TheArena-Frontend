@@ -93,7 +93,7 @@ public class LoginPage extends Fragment implements View.OnClickListener {
         signIn.setOnClickListener(this);
         register.setOnClickListener(this);
 
-        final String sharedMail = Preferences.getMail(Objects.requireNonNull(getContext()));
+        String sharedMail = Preferences.getMail(getContext());
         String sharedPassword = Preferences.getPassword(getContext());
 
         iAsyncResponse = new IAsyncResponse() {
@@ -102,25 +102,26 @@ public class LoginPage extends Fragment implements View.OnClickListener {
 
                 try {
                     JSONObject res = new JSONObject(response.toString());
+
                     if(res.has("Success")){
                         String pass = Encryption.encryptThisString(password.getText().toString()); //encrypt password
-
-                        Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
-                        Preferences.saveUserId(res.getString("userId"),Objects.requireNonNull(getContext()));
-
+                        if (sharedMail.equals("")){
+                            Preferences.saveMailAndPassword(userEmail.getText().toString(), pass, Objects.requireNonNull(getContext()));
+                            Preferences.saveUserId(res.getString("userId"),Objects.requireNonNull(getContext()));
+                        }
                         MainActivity mainActivity = (MainActivity) getActivity();
                         assert mainActivity != null;
-
-                        if (!sharedMail.equals("")){
-                            mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
-                        }else if (!userEmail.getText().toString().equals("")){
-                            mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
-                        }else {
-                            return;
-                        }
+                        Log.d("TAG", String.valueOf(res)+"1");
+//                        if (!sharedMail.equals("")){
+//                            mainActivity.innerDatabaseHandler.addUser(sharedMail, pass);
+//                        }else if (!userEmail.getText().toString().equals("")){
+//                            mainActivity.innerDatabaseHandler.addUser(userEmail.getText().toString(), pass);
+//                        }else {
+//                            return;
+//                        }
                         mainActivity.moveToMap();
                     }  else {
-                        Toast.makeText(getContext(), "Email or password are incorrect", Toast.LENGTH_LONG).show();
+                        Log.d("TAG", "Faild "+response);
                     }
                 } catch (Throwable t) {
                     Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");

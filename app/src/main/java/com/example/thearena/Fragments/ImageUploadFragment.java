@@ -45,8 +45,11 @@ import android.widget.Toast;
 //import com.android.volley.Request;
 //import com.android.volley.VolleyError;
 //import com.android.volley.toolbox.StringRequest;
+import com.bumptech.glide.Glide;
 import com.example.thearena.Activities.MainActivity;
+import com.example.thearena.Activities.MapActivity;
 import com.example.thearena.Classes.NetworkClient;
+import com.example.thearena.Classes.Registration;
 import com.example.thearena.Interfaces.UploadApis;
 import com.example.thearena.R;
 import com.example.thearena.Utils.Constants;
@@ -139,11 +142,17 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         submitBtn = v.findViewById(R.id.imageUploadEnterArena);
         imageView = v.findViewById(R.id.imageUploadImageView);
         cameraBtn = v.findViewById(R.id.openCameraButton);
-        imageView.setTag(R.drawable.ic_user_profile_24);
-        originImageView = (Integer) imageView.getTag();
+//        imageView.setTag(R.drawable.ic_user_profile_24);
+//        originImageView = (Integer) imageView.getTag();
         chooseBtn.setOnClickListener(this);
         submitBtn.setOnClickListener(this);
         cameraBtn.setOnClickListener(this);
+
+        if(Registration.getIsMale().equals("Male"))
+            imageView.setImageResource(R.drawable.male_user);
+        else
+            imageView.setImageResource(R.drawable.female_user);
+
 
         return v;
     }

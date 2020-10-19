@@ -25,7 +25,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.218"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sec_drawerHeaderProfilePic" />
+        app:layout_constraintTop_toBottomOf="@+id/sec_drawerHeaderProfilePic"
+        tools:text='"Moshe"' />
 
     <TextView
         android:id="@+id/sec_drawerHeaderUserAge"
