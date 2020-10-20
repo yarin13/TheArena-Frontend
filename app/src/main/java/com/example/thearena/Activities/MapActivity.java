@@ -25,6 +25,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.android.volley.Request;
@@ -36,12 +38,15 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Classes.Question;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
+import com.example.thearena.UI.RecyclerViewAdapter;
+import com.example.thearena.UI.RecyclerViewImageAdapter;
 import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Preferences;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -63,6 +68,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -98,6 +104,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Button whatsAppBtn;
     private Button blockBtn;
     private User selectedUser;
+    Context context;
+    private RecyclerView recyclerView;
+    private RecyclerViewImageAdapter recyclerViewImageAdapter;
+    private RecyclerView.LayoutManager layoutManager;
 
 
     @Override
@@ -114,7 +124,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         FloatingActionButton floatingActionButton = findViewById(R.id.mapFloatingButton);
         floatingActionButton.setAlpha(0.50f);
         floatingActionButton.setOnClickListener(view -> drawerLayout.openDrawer(Gravity.RIGHT));
-
+        context = this;
         //setActionBarsDrawable - setting all action bars related stuff:
         setActionBarsDrawable();
 
@@ -176,7 +186,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
             @Override
             public void onDrawerOpened(View drawerView) {
-
+//                recyclerView = findViewById(R.id.selected_user_recycle_view_container);
+//                recyclerView.setHasFixedSize(true);
+//                layoutManager = new LinearLayoutManager(getApplicationContext());
+//                recyclerView.setLayoutManager(layoutManager);
             }
         };
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
@@ -215,7 +228,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
-        getPhotosId();
+        IAsyncResponse iAsync = new IAsyncResponse() {
+            @Override
+            public <T> void processFinished(T response) {
+                try {
+                    JSONObject object = new JSONObject(response.toString());
+                    selectedUserPhotosId = object.getJSONArray(selectedUser.getUserEmail());
+                    ArrayList<Integer> listdata = new ArrayList<>();
+                    for (int i = 0; i < selectedUserPhotosId.length(); i++) {
+                        listdata.add(selectedUserPhotosId.getInt(i));
+                    }
+                    recyclerView = findViewById(R.id.selected_user_recycle_view_container);
+                    recyclerView.setHasFixedSize(true);
+                    layoutManager = new LinearLayoutManager(context);
+                    recyclerView.setLayoutManager(layoutManager);
+
+                    recyclerViewImageAdapter = new RecyclerViewImageAdapter(context,listdata);
+                    recyclerView.setAdapter(recyclerViewImageAdapter);
+                    recyclerViewImageAdapter.notifyDataSetChanged();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        getPhotosId(iAsync);
         if (selectedUser != null) {
 
             selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
@@ -249,20 +285,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return false;
     }
 
-    private void getPhotosId() {
+    private void getPhotosId(final IAsyncResponse iAsync) {
         new Thread(() -> {
             RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
             StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.PHOTOS_URL, listener -> {
                 try {
-                    JSONObject object = new JSONObject(listener);
-                    if (listener.contains(selectedUser.getUserEmail())){
-                        selectedUserPhotosId = object.getJSONArray(selectedUser.getUserEmail());
-
-                        for (int i = 0; i < selectedUserPhotosId.length(); i++){
-                            //TODO: Need to check how to use Glide here........
-                        }
+                    if (listener.contains(selectedUser.getUserEmail())) {
+                        iAsync.processFinished(listener);
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }, error -> {

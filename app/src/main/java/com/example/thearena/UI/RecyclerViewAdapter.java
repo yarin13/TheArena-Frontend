@@ -101,8 +101,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         public RadioButton secondAnswer;
         public RadioButton thirdAnswer;
         public RadioButton fourthAnswer;
-
-
         public RadioGroup radioGroup;
 
         public ViewHolder(@NonNull final View itemView) {
@@ -112,11 +110,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             secondAnswer = itemView.findViewById(R.id.question_row_secondAnswer);
             thirdAnswer = itemView.findViewById(R.id.question_row_thirdAnswer);
             fourthAnswer = itemView.findViewById(R.id.question_row_fourthAnswer);
-
-
             radioGroup = itemView.findViewById(R.id.question_row_radioGroup);
-
         }
-
     }
 }

@@ -118,7 +118,7 @@ public class RegisterQuestionsFragment extends Fragment {
                             if(res.has("Success")){
                                 Preferences.saveMailAndPassword(Registration.getEmail(), Registration.getPassword(), Objects.requireNonNull(getActivity()).getBaseContext());
                                 Preferences.saveUserId(res.getString("userId"),Objects.requireNonNull(getActivity()).getBaseContext());
-                                Log.d("Testingg","UserId: "+res.get("userId").toString());
+
                                 MainActivity mainActivity = (MainActivity) getActivity();
                                 assert mainActivity != null;
                                 mainActivity.innerDatabaseHandler.addUser(Registration.getEmail(), Registration.getPassword());
