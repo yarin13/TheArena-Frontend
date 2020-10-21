@@ -33,6 +33,7 @@ public class RecyclerViewImageAdapter extends RecyclerView.Adapter<RecyclerViewI
     private LayoutInflater mInflater;
 
     public RecyclerViewImageAdapter(Context context, List<Integer> photosIds) {
+        Log.d("imageadapter", "RecyclerViewImageAdapter: ");
         this.mInflater = LayoutInflater.from(context);
         this.context = context;
         this.photosIds = photosIds;
@@ -41,6 +42,7 @@ public class RecyclerViewImageAdapter extends RecyclerView.Adapter<RecyclerViewI
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d("imageadapter", "onCreateViewHolder: ");
         View view = mInflater.inflate(R.layout.selected_user_photos, parent, false);
         //View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.selected_user_photos, parent, false);
         return new ViewHolder(view);
@@ -49,7 +51,7 @@ public class RecyclerViewImageAdapter extends RecyclerView.Adapter<RecyclerViewI
     @Override
     public void onBindViewHolder(@NonNull final RecyclerViewImageAdapter.ViewHolder holder, final int position) {
         int photoId = photosIds.get(position);
-        Log.d(TAG, String.valueOf(photosIds.get(position)));
+        Log.d("imageadapter", String.valueOf(photosIds.get(position)));
         GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                 .addHeader("action", "getPhoto")
                 .addHeader("photoId", String.valueOf(photoId))
@@ -65,6 +67,7 @@ public class RecyclerViewImageAdapter extends RecyclerView.Adapter<RecyclerViewI
 
     @Override
     public int getItemCount() {
+        Log.d("imageadapter", "getItemCount: "+ photosIds.size());
         return photosIds.size();
     }
 
@@ -74,6 +77,7 @@ public class RecyclerViewImageAdapter extends RecyclerView.Adapter<RecyclerViewI
 
         public ViewHolder(@NonNull final View itemView) {
             super(itemView);
+            Log.d("imageadapter", "ViewHolder: ");
             Log.d(TAG, "ViewHolder: "+1);
             imageView = itemView.findViewById(R.id.selected_user_photo);
         }
