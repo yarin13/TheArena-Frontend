@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/sec_drawerHeader"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/sec_drawerHeaderProfilePic"
@@ -107,10 +107,10 @@
         app:layout_constraintTop_toBottomOf="@+id/selected_user_info_panel">
 
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/selected_user_recycle_view_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/selected_user_recycle_view_container"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent" />-->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

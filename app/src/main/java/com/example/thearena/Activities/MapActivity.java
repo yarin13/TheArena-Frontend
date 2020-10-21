@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -181,6 +182,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
                         .build());
                 Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
+
             }
         };
         ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
@@ -228,6 +230,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
+        recyclerView = findViewById(R.id.selected_user_recycle_view_container);
+        recyclerView.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(layoutManager);
         IAsyncResponse iAsync = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
@@ -238,10 +244,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     for (int i = 0; i < selectedUserPhotosId.length(); i++) {
                         listdata.add(selectedUserPhotosId.getInt(i));
                     }
-                    recyclerView = findViewById(R.id.selected_user_recycle_view_container);
-                    recyclerView.setHasFixedSize(true);
-                    layoutManager = new LinearLayoutManager(context);
-                    recyclerView.setLayoutManager(layoutManager);
 
                     recyclerViewImageAdapter = new RecyclerViewImageAdapter(context,listdata);
                     recyclerView.setAdapter(recyclerViewImageAdapter);

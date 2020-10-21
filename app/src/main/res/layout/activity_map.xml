@@ -48,10 +48,23 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/secNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/selected_user_drawer">
+        android:fitsSystemWindows="true">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include
+                android:id="@+id/secNavHeader"
+                layout="@layout/selected_user_drawer" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selected_user_recycle_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/secNavHeader"/>
+        </RelativeLayout>
     </com.google.android.material.navigation.NavigationView>
+
 </androidx.drawerlayout.widget.DrawerLayout>
