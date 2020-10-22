@@ -66,7 +66,7 @@ public class InnerDatabaseHandler extends SQLiteOpenHelper {
         db.close(); //closing db connection
     }
 
-    private void dropTables() {
+    public void dropTables() {
         String DROP_TABLES = "DROP TABLE IF EXISTS "+Constants.TABLE_NAME;
         SQLiteDatabase db = this.getWritableDatabase();
 

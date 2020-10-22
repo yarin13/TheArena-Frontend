@@ -5,10 +5,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ClipData;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -28,6 +30,7 @@ import androidx.fragment.app.Fragment;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.service.voice.AlwaysOnHotwordDetector;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -59,6 +62,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -72,6 +76,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import static android.app.Activity.RESULT_OK;
+import static android.content.ContentValues.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,7 +92,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
     private TextView subTitle;
     private int originImageView;
     private Uri imageData = null;
-    private File file = null;
+    private File file;
     private Boolean storagePermissionGranted = false;
     private Boolean cameraPermissionGranted = false;
 
@@ -148,13 +153,33 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         submitBtn.setOnClickListener(this);
         cameraBtn.setOnClickListener(this);
 
-        if(Registration.getIsMale().equals("Male"))
-            imageView.setImageResource(R.drawable.male_user);
-        else
-            imageView.setImageResource(R.drawable.female_user);
+
+
+//        if(Registration.getIsMale().equals("Male")){
+//
+//            imageView.setImageResource(R.drawable.male_user);
+//            Resources resources = getContext().getResources();
+//            Uri imageUri = (new Uri.Builder())
+//                    .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+//                    .authority(resources.getResourcePackageName(R.drawable.male_user))
+//                    .appendPath(resources.getResourceTypeName(R.drawable.male_user))
+//                    .appendPath(resources.getResourceEntryName(R.drawable.male_user))
+//                    .build();
+//            Log.d(TAG, imageUri.getPath());
+//            Log.d(TAG, imageUri.getAuthority());
+//            file = new File(imageUri.getPath());
+//        }
+//        else {
+//            imageView.setImageResource(R.drawable.ic_baseline_pregnant_woman_24);
+//            file = new File(getURLForResource(R.drawable.ic_baseline_pregnant_woman_24));
+//        }
 
 
         return v;
+    }
+    public String getURLForResource (int resourceId) {
+        //use BuildConfig.APPLICATION_ID instead of R.class.getPackage().getName() if both are not same
+        return Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +resourceId).toString();
     }
 
     @Override
@@ -162,7 +187,6 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         switch (view.getId()) {
             case R.id.imageUploadSelectImageButton:
                 selectImageFromGallery();
-                checkImage();
                 break;
             case R.id.imageUploadEnterArena:
                 sendImageToServer();
@@ -203,16 +227,9 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         }
     }
 
-
-    private void checkImage() {
-        if ((Integer) imageView.getTag() != originImageView) {
-            subTitle.setText("You look stunning, dear\n" +
-                    "So don't ask that question here");
-        }
-    }
-
     public void sendImageToServer() {
-        if (file != null) {
+        if (file.exists()) {
+            //new Thread(() -> addImageToDb()).start();
             Retrofit retrofit = NetworkClient.getRetrofit();
             UploadApis uploadApis = retrofit.create(UploadApis.class);
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -235,6 +252,30 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
 
     }
 
+    public void addImageToDb() {
+        if (file != null) {
+            Retrofit retrofit = NetworkClient.getRetrofit();
+            UploadApis uploadApis = retrofit.create(UploadApis.class);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("newPhoto", file.getName(), requestFile);
+            RequestBody email = RequestBody.create(MediaType.parse("multipart/form-data"),Registration.getEmail());
+            Call call = uploadApis.postRequestImage(body, email);
+            call.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    Toast.makeText(getContext(), "Done", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                    Toast.makeText(getContext(), "Oops something went wrong..", Toast.LENGTH_LONG).show();
+                }
+            });
+        } else
+            Snackbar.make(Objects.requireNonNull(getView()), "Make sure to upload a picture later", Snackbar.LENGTH_LONG).show();
+
+    }
+
     public void selectImageFromGallery() {
         if (storagePermissionGranted) {
             Intent intent = new Intent();
@@ -244,7 +285,6 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
         } else {
             checkStoragePermissions();
         }
-
     }
 
     //this function will be called every time we choose an image from the gallery
@@ -409,11 +449,6 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                     }
                 }
                 storagePermissionGranted = true;
-
-//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                    return;
-//                }
             }
         }
     }

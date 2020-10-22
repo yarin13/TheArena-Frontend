@@ -4,20 +4,24 @@
     <item android:id="@+id/menu_profile"
         android:icon="@drawable/ic_settings"
         android:title="Settings"
+        android:enabled="true"
         app:showAsAction="never"/>
     <item
         android:id="@+id/upload_image"
         android:icon="@drawable/ic_baseline_add_a_photo"
-        android:title="Add new image"
+        android:title="Add new Image"
+        android:enabled="true"
         app:showAsAction="never" />
     <item
         android:id="@+id/upload_profile_image"
         android:icon="@drawable/ic_baseline_cloud_upload"
         android:title="Upload new profile image"
+        android:enabled="true"
         app:showAsAction="never" />
     <item
         android:id="@+id/menu_logout"
         android:icon="@drawable/ic_log_out"
-        android:title="Log Out"
+        android:enabled="true"
+        android:title="Log-Out"
         app:showAsAction="never" />
 </menu>

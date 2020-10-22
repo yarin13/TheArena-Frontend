@@ -12,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
+        <fragment
             android:id="@+id/MapId"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
@@ -30,19 +29,31 @@
             android:layout_alignParentBottom="true"
             android:layout_marginStart="168dp"
             android:layout_marginEnd="177dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="64dp"
             app:backgroundTint="#00BFA5"
             app:pressedTranslationZ="0dp" />
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/menu_xml">
+        android:fitsSystemWindows="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <include
+                android:id="@+id/NavHeader"
+                layout="@layout/drawer_header" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/loggedIn_user_recycle_view_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/NavHeader"/>
+        </RelativeLayout>
 
     </com.google.android.material.navigation.NavigationView>
 
@@ -66,5 +77,31 @@
             android:layout_below="@+id/secNavHeader"/>
         </RelativeLayout>
     </com.google.android.material.navigation.NavigationView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--            android:id="@+id/bottom_navigation"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:isScrollContainer="false"-->
+<!--            android:layout_height="65dp"-->
+<!--            android:layout_gravity="bottom"-->
+<!--            app:menu="@menu/menu_xml" />-->
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_gravity="bottom"
+            android:background="@color/white"
+            app:itemTextColor="@color/darker_gray"
+            app:menu="@menu/menu_xml"
+            app:layout_behavior="BottomNavigationBehavior"
+            app:itemIconTint="@drawable/selector_navigation" />
+
+    </LinearLayout>
+
 
 </androidx.drawerlayout.widget.DrawerLayout>
