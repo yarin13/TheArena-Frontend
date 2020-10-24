@@ -123,8 +123,8 @@ public class RegisterQuestionsFragment extends Fragment {
                                 assert mainActivity != null;
                                 mainActivity.innerDatabaseHandler.addUser(Registration.getEmail(), Registration.getPassword());
                                 mainActivity.mainFragmentManager(new ImageUploadFragment());
-                            } else
-                                Toast.makeText(getActivity(), "" + response.toString(), Toast.LENGTH_SHORT).show();
+                            }
+
                         } catch (Throwable t) {
                             Log.d("My App", "Could not parse malformed JSON: \"" + response.toString() + "\"");
                         }

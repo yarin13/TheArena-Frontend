@@ -33,4 +33,8 @@ public class Preferences {
         SharedPreferences x = context.getSharedPreferences("userPrefs",MODE_PRIVATE);
         return x.getString("userPassword","");
     }
+
+    public static void deleteAllPref(Context context){
+        context.deleteSharedPreferences("userPrefs");
+    }
 }

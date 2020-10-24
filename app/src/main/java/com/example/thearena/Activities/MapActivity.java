@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.UiThread;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -28,7 +27,6 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -39,14 +37,12 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.thearena.Classes.Authentication;
-import com.example.thearena.Classes.Question;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
-import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.R;
-import com.example.thearena.UI.RecyclerViewAdapter;
+import com.example.thearena.UI.LoggedInRecyclerViewImageAdapter;
 import com.example.thearena.UI.RecyclerViewImageAdapter;
 import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Preferences;
@@ -60,6 +56,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -69,14 +66,13 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MAP";
     private IAsyncResponse iAsyncResponse;
+    private IAsyncResponse loggedInUserResponse;
     Location lastCurrentLocation;
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationClient;
@@ -93,8 +89,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private ImageView drawerProfilePic;
+    private JSONArray loggedInUserData;
     private TextView loggedInUserFullName;
     private TextView loggedInUserAge;
+    private RecyclerView loggedInUserRecyclerView;
+    private LoggedInRecyclerViewImageAdapter loggedInRecyclerViewImageAdapter;
+    private RecyclerView.LayoutManager loggedInlayoutManager;
 
     private NavigationView selectedUserNavigationView;
     private ImageView selectedUserProfilePic;
@@ -106,7 +106,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Button blockBtn;
     private User selectedUser;
     Context context;
-    private RecyclerView recyclerView;
+    private RecyclerView selectedUserRecyclerView;
     private RecyclerViewImageAdapter recyclerViewImageAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
@@ -122,6 +122,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         navigationView = findViewById(R.id.navigationView);
         selectedUserNavigationView = findViewById(R.id.secNavigationView);
 
+        //FloatingActionButton floatingActionButton = findViewById(R.id.mapFloatingButton);
         FloatingActionButton floatingActionButton = findViewById(R.id.mapFloatingButton);
         floatingActionButton.setAlpha(0.50f);
         floatingActionButton.setOnClickListener(view -> drawerLayout.openDrawer(Gravity.RIGHT));
@@ -138,9 +139,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getLocationPermission();
 
         currentUserEmail = Preferences.getMail(this);
-//        if (currentUserEmail.equals("")) {
-//            currentUserEmail = this.innerDatabaseHandler.getUserEmail();
-//        }
+
 
         currentLoggedInResponse = new IAsyncResponse() {
             @Override
@@ -167,42 +166,60 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-
     private void setActionBarsDrawable() {
+
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
                 loggedInUserAge = findViewById(R.id.drawerHeaderUserAge);
                 loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
+
+                loggedInUserRecyclerView = findViewById(R.id.loggedIn_user_recycle_view_container);
+                loggedInUserRecyclerView.setHasFixedSize(true);
+                loggedInlayoutManager = new LinearLayoutManager(MapActivity.this);
+                loggedInUserRecyclerView.setLayoutManager(loggedInlayoutManager);
+                loggedInUserResponse = new IAsyncResponse() {
+                    @Override
+                    public <T> void processFinished(T response) {
+                        try {
+                            JSONObject object = new JSONObject(response.toString());
+                            loggedInUserData = object.getJSONArray(currentUserEmail);
+                            ArrayList<Integer> listdata = new ArrayList<>();
+                            for (int i = 0; i < loggedInUserData.length(); i++) {
+                                listdata.add(loggedInUserData.getInt(i));
+                            }
+
+                            loggedInRecyclerViewImageAdapter = new LoggedInRecyclerViewImageAdapter(MapActivity.this, listdata);
+                            loggedInUserRecyclerView.setAdapter(loggedInRecyclerViewImageAdapter);
+                            loggedInRecyclerViewImageAdapter.notifyDataSetChanged();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                getPhotosId(loggedInUserResponse, currentUserEmail);
+
                 loggedInUserFullName.setText(currentLoggedInUser.getFirstName() + " " + currentLoggedInUser.getLastName());
                 loggedInUserAge.setText(String.valueOf(currentLoggedInUser.getUserAge()));
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
                         .build());
-                Glide.with(MapActivity.this).load(glideUrl).into(drawerProfilePic);
+                Glide.with(MapActivity.this)
+                        .load(glideUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .into(drawerProfilePic);
 
             }
         };
-        ActionBarDrawerToggle selectedUserActionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, null, R.string.open, R.string.close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-//                recyclerView = findViewById(R.id.selected_user_recycle_view_container);
-//                recyclerView.setHasFixedSize(true);
-//                layoutManager = new LinearLayoutManager(getApplicationContext());
-//                recyclerView.setLayoutManager(layoutManager);
-            }
-        };
+
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-
-        drawerLayout.addDrawerListener(selectedUserActionBarDrawerToggle);
-        selectedUserActionBarDrawerToggle.setDrawerIndicatorEnabled(true);
-        selectedUserActionBarDrawerToggle.syncState();
-        selectedUserNavigationView.setNavigationItemSelectedListener(this);
     }
 
     private void openWhatsApp() {
@@ -230,10 +247,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public boolean onMarkerClick(Marker marker) {
         selectedUser = extraMarkerInfo.get(marker.getId());
-        recyclerView = findViewById(R.id.selected_user_recycle_view_container);
-        recyclerView.setHasFixedSize(true);
+
+        selectedUserRecyclerView = findViewById(R.id.selected_user_recycle_view_container);
+        selectedUserRecyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
-        recyclerView.setLayoutManager(layoutManager);
+        selectedUserRecyclerView.setLayoutManager(layoutManager);
         IAsyncResponse iAsync = new IAsyncResponse() {
             @Override
             public <T> void processFinished(T response) {
@@ -245,15 +263,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         listdata.add(selectedUserPhotosId.getInt(i));
                     }
 
-                    recyclerViewImageAdapter = new RecyclerViewImageAdapter(context,listdata);
-                    recyclerView.setAdapter(recyclerViewImageAdapter);
+                    recyclerViewImageAdapter = new RecyclerViewImageAdapter(context, listdata);
+                    selectedUserRecyclerView.setAdapter(recyclerViewImageAdapter);
                     recyclerViewImageAdapter.notifyDataSetChanged();
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         };
-        getPhotosId(iAsync);
+        getPhotosId(iAsync, selectedUser.getUserEmail());
         if (selectedUser != null) {
 
             selectedUserProfilePic = findViewById(R.id.sec_drawerHeaderProfilePic);
@@ -287,14 +305,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return false;
     }
 
-    private void getPhotosId(final IAsyncResponse iAsync) {
+    private void getPhotosId(final IAsyncResponse iAsync, String how) {
         new Thread(() -> {
             RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
             StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.PHOTOS_URL, listener -> {
                 try {
-                    if (listener.contains(selectedUser.getUserEmail())) {
+                    if (listener.contains(how))
                         iAsync.processFinished(listener);
-                    }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -305,7 +323,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 public Map<String, String> getHeaders() {
                     HashMap<String, String> params = new HashMap<>();
                     params.put("action", "getPhotosIds");
-                    params.put("email", selectedUser.getUserEmail());
+                    params.put("email", how);
                     return params;
                 }
             };
@@ -452,6 +470,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 map.clear();
                 isLoggedIn = false;
                 Authentication.logoff(this, currentUserEmail);
+                Preferences.deleteAllPref(this);
+                innerDatabaseHandler.dropTables();
                 MainActivity mainActivity = new MainActivity();
                 mainActivity.mainFragmentManager(new LoginPage());
                 break;
