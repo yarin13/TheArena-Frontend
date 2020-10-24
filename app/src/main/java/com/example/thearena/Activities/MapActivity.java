@@ -37,10 +37,13 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.example.thearena.Classes.Authentication;
+import com.example.thearena.Classes.NetworkClient;
+import com.example.thearena.Classes.Registration;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Interfaces.IAsyncResponse;
+import com.example.thearena.Interfaces.UploadApis;
 import com.example.thearena.R;
 import com.example.thearena.UI.LoggedInRecyclerViewImageAdapter;
 import com.example.thearena.UI.RecyclerViewImageAdapter;
@@ -56,17 +59,24 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener {
@@ -95,6 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private RecyclerView loggedInUserRecyclerView;
     private LoggedInRecyclerViewImageAdapter loggedInRecyclerViewImageAdapter;
     private RecyclerView.LayoutManager loggedInlayoutManager;
+    private File file;
 
     private NavigationView selectedUserNavigationView;
     private ImageView selectedUserProfilePic;
@@ -154,6 +165,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         currentLoggedInUser.setUserGender(res.getString("gender"));
                         currentLoggedInUser.setUserInterestedIn(res.getString("interestedIn"));
                         currentLoggedInUser.setUserPhoneNumber(res.getString("phoneNumber"));
+
+
                     }
                 } catch (Throwable t) {
                     Log.d(TAG, "processFinished: " + t.getMessage());
