@@ -345,11 +345,6 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                 if ("image".equals(type)) {
                     contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
                 }
-//                else if ("video".equals(type)) {
-//                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-//                } else if ("audio".equals(type)) {
-//                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-//                }
                 final String selection = "_id=?";
                 final String[] selectionArgs = new String[]{split[1]};
                 return getDataColumn(context, contentUri, selection, selectionArgs);

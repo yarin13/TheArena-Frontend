@@ -8,6 +8,7 @@
     android:layout_height="match_parent"
     tools:context=".Activities.MapActivity">
 
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -22,22 +23,38 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mapFloatingButton"
-            android:layout_width="wrap_content"
+            android:layout_width="62dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="168dp"
-            android:layout_marginEnd="177dp"
-            android:layout_marginBottom="64dp"
+            android:layout_marginStart="176dp"
+            android:layout_marginEnd="173dp"
+            android:layout_marginBottom="68dp"
             app:backgroundTint="#00BFA5"
             app:pressedTranslationZ="0dp" />
+
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/navigation"
+                android:layout_alignBottom="@id/MapId"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_gravity="bottom"
+                android:background="@color/white"
+                app:itemTextColor="@color/darker_gray"
+                app:menu="@menu/menu_xml"
+                app:layout_behavior="BottomNavigationBehavior"
+                app:itemIconTint="@drawable/selector_navigation" />
+
+
+
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="end"
         android:fitsSystemWindows="true">
 
@@ -78,30 +95,7 @@
         </RelativeLayout>
     </com.google.android.material.navigation.NavigationView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
-<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
-<!--            android:id="@+id/bottom_navigation"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:isScrollContainer="false"-->
-<!--            android:layout_height="65dp"-->
-<!--            android:layout_gravity="bottom"-->
-<!--            app:menu="@menu/menu_xml" />-->
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/navigation"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_gravity="bottom"
-            android:background="@color/white"
-            app:itemTextColor="@color/darker_gray"
-            app:menu="@menu/menu_xml"
-            app:layout_behavior="BottomNavigationBehavior"
-            app:itemIconTint="@drawable/selector_navigation" />
-
-    </LinearLayout>
 
 
 </androidx.drawerlayout.widget.DrawerLayout>
