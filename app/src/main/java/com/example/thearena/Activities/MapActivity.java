@@ -198,9 +198,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 loggedInUserFirstName = findViewById(R.id.loggedInUserFirstName);
                 loggedInUserLastName = findViewById(R.id.loggedInUserLastName);
                 loggedInUserPhoneNumber = findViewById(R.id.loggedInUserPhoneNumber);
-                loggedInUserAge = findViewById(R.id.loggedInUserAge);
-                loggedInUserGender = findViewById(R.id.loggedInUserGender);
-                loggedInUserInterestedIn = findViewById(R.id.loggedInUserInterestedIn);
                 loggedInApplyBtn = findViewById(R.id.loggedInApplyButton);
 
                 loggedInApplyBtn.setOnClickListener(new View.OnClickListener() {
@@ -311,9 +308,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         loggedInUserFirstName.setText(currentLoggedInUser.getFirstName());
         loggedInUserLastName.setText(currentLoggedInUser.getLastName());
         loggedInUserPhoneNumber.setText(currentLoggedInUser.getUserPhoneNumber());
-        loggedInUserAge.setText(String.valueOf(currentLoggedInUser.getUserAge()));
-        loggedInUserGender.setText(currentLoggedInUser.getUserGender());
-        loggedInUserInterestedIn.setText(currentLoggedInUser.getUserInterestedIn());
     }
 
     private void openWhatsApp() {
