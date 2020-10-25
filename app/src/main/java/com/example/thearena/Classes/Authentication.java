@@ -89,17 +89,13 @@ public class Authentication {
         requestManager(context, Constants.USERINFO_URL, Request.Method.GET, iAsyncResponse, map);
     }
 
-    public static void setCurrentUserInfo(final Context context,final String userId, final String email,final String firstName,final String lastName,final String phoneNumber,final String age,final String gender,
-                                          final String interestedIn, final IAsyncResponse iAsyncResponse) {
+    public static void setCurrentUserInfo(final Context context,final String userId, final String email,final String firstName,final String lastName,final String phoneNumber, final IAsyncResponse iAsyncResponse) {
         map.clear();
-           // map.put("email", email);
+            map.put("email", email);
             map.put("userId",userId);
             map.put("firstName", firstName);
             map.put("lastName", lastName);
             map.put("phoneNumber", phoneNumber);
-            map.put("age", age);
-            map.put("gender", gender);
-            map.put("interestedIn", interestedIn);
             requestManager(context, Constants.USERINFO_URL, Request.Method.POST, iAsyncResponse, map);
 
     }
@@ -171,10 +167,7 @@ public class Authentication {
                             body.put("firstName", paramsToBody.get("firstName"));
                             body.put("lastName", paramsToBody.get("lastName"));
                             body.put("phoneNumber", paramsToBody.get("phoneNumber"));
-                            body.put("age", paramsToBody.get("age"));
-                            body.put("gender", paramsToBody.get("gender"));
-                            body.put("interestedIn", paramsToBody.get("interestedIn"));
-                           // body.put("email", paramsToBody.get("email"));
+                            body.put("email", paramsToBody.get("email"));
 
                             return body.toString().getBytes();
                         }

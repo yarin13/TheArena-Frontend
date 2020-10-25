@@ -13,6 +13,12 @@ public class Preferences {
         editor.putString("userPassword",Password);
         editor.apply();
     }
+    public static void saveMail(String mail, Context context){
+        SharedPreferences newUser = context.getSharedPreferences("userPrefs",MODE_PRIVATE);
+        SharedPreferences.Editor editor = newUser.edit();
+        editor.putString("email", mail);
+        editor.apply();
+    }
 
     public static void saveUserId(String userId, Context context){
         SharedPreferences newUser = context.getSharedPreferences("userPrefs",MODE_PRIVATE);

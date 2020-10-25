@@ -169,9 +169,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         currentLoggedInUser.setFirstName(res.getString("firstName"));
                         currentLoggedInUser.setLastName(res.getString("lastName"));
                         currentLoggedInUser.setUserEmail(res.getString("email"));
-                        currentLoggedInUser.setUserAge(res.getInt("age"));
-                        currentLoggedInUser.setUserGender(res.getString("gender"));
-                        currentLoggedInUser.setUserInterestedIn(res.getString("interestedIn"));
                         currentLoggedInUser.setUserPhoneNumber(res.getString("phoneNumber"));
 
 
@@ -205,13 +202,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onClick(View view) {
 
                         applyChanges();
-//                        currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
-//                        currentLoggedInUser.setLastName(loggedInUserLastName.getText().toString().trim());
-//                        currentLoggedInUser.setUserEmail(loggedInUserEmail.getText().toString().trim());
-//                        currentLoggedInUser.setUserAge(Integer.parseInt(loggedInUserAge.getText().toString().trim()));
-//                        currentLoggedInUser.setUserGender(loggedInUserGender.getText().toString().trim());
-//                        currentLoggedInUser.setUserInterestedIn(loggedInUserInterestedIn.getText().toString().trim());
-//                        currentLoggedInUser.setUserPhoneNumber(loggedInUserPhoneNumber.getText().toString().trim());
+
                     }
                 });
 
@@ -272,31 +263,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 try {
                     JSONObject res = new JSONObject(response.toString());
-                    if(!res.has("Success")){
-
+                    if(res.has("Error")){
+                        Toast.makeText(context,res.getString("Error").toString(),Toast.LENGTH_SHORT).show();
                     }
                     else{
+                        Preferences.saveMail(loggedInUserEmail.getText().toString().trim(),context);
+                        currentUserEmail = Preferences.getMail(context);
                         currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
+                        currentLoggedInUser.setLastName(loggedInUserLastName.getText().toString().trim());
+                        currentLoggedInUser.setUserPhoneNumber(loggedInUserPhoneNumber.getText().toString().trim());
+                        currentLoggedInUser.setUserEmail(loggedInUserEmail.getText().toString().trim());
+                        Toast.makeText(context,"Changes applied successfully",Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-
-                currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
-//                currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
-//                currentLoggedInUser.setLastName(loggedInUserLastName.getText().toString().trim());
-//                currentLoggedInUser.setUserEmail(loggedInUserEmail.getText().toString().trim());
-//                currentLoggedInUser.setUserAge(Integer.parseInt(loggedInUserAge.getText().toString().trim()));
-//                currentLoggedInUser.setUserGender(loggedInUserGender.getText().toString().trim());
-//                currentLoggedInUser.setUserInterestedIn(loggedInUserInterestedIn.getText().toString().trim());
-//                currentLoggedInUser.setUserPhoneNumber(loggedInUserPhoneNumber.getText().toString().trim());
             }
         };
 
-        Authentication.setCurrentUserInfo(this,Preferences.getUserId(this),loggedInUserEmail.getText().toString().trim(),loggedInUserFirstName.getText().toString().trim(),loggedInUserLastName.getText().toString().trim(),
-                loggedInUserPhoneNumber.getText().toString().trim(),loggedInUserAge.getText().toString().trim(),loggedInUserGender.getText().toString().trim(),
-                loggedInUserInterestedIn.getText().toString().trim(),updateInfoResponse);
+        String mail = loggedInUserEmail.getText().toString().trim();
+        if(mail.equals(currentUserEmail)){
+            mail = null;
+        }
+        Authentication.setCurrentUserInfo(this,Preferences.getUserId(this),mail,loggedInUserFirstName.getText().toString().trim(),
+                loggedInUserLastName.getText().toString().trim(),
+                loggedInUserPhoneNumber.getText().toString().trim(),updateInfoResponse);
 
 
     }
@@ -506,6 +497,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             googleMap.setOnMarkerClickListener(this);
             googleMap.setOnMapClickListener(latLng -> selectedUserNavigationView.setVisibility(View.GONE));
+            Log.d("plkjh", "processFinished: "+currentUserEmail);
             new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
         } else
             getLocationPermission();
