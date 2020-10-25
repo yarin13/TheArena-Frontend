@@ -63,6 +63,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -100,11 +101,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private NavigationView navigationView;
     private ImageView drawerProfilePic;
     private JSONArray loggedInUserData;
-    private TextView loggedInUserFullName;
+    private TextView loggedInUserFirstName;
+    private TextView loggedInUserLastName;
+    private TextView loggedInUserEmail;
+    private TextView loggedInUserPhoneNumber;
     private TextView loggedInUserAge;
+    private TextView loggedInUserGender;
+    private TextView loggedInUserInterestedIn;
     private RecyclerView loggedInUserRecyclerView;
     private LoggedInRecyclerViewImageAdapter loggedInRecyclerViewImageAdapter;
     private RecyclerView.LayoutManager loggedInlayoutManager;
+    private Button loggedInApplyBtn;
+
     private File file;
 
     private NavigationView selectedUserNavigationView;
@@ -185,8 +193,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onDrawerOpened(View drawerView) {
                 drawerProfilePic = findViewById(R.id.drawerHeaderProfilePic);
-                loggedInUserAge = findViewById(R.id.drawerHeaderUserAge);
-                loggedInUserFullName = findViewById(R.id.drawerHeaderUserName);
+
+                loggedInUserEmail = findViewById(R.id.loggedInUserEmail);
+                loggedInUserFirstName = findViewById(R.id.loggedInUserFirstName);
+                loggedInUserLastName = findViewById(R.id.loggedInUserLastName);
+                loggedInUserPhoneNumber = findViewById(R.id.loggedInUserPhoneNumber);
+                loggedInUserAge = findViewById(R.id.loggedInUserAge);
+                loggedInUserGender = findViewById(R.id.loggedInUserGender);
+                loggedInUserInterestedIn = findViewById(R.id.loggedInUserInterestedIn);
+                loggedInApplyBtn = findViewById(R.id.loggedInApplyButton);
+
+                loggedInApplyBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        applyChanges();
+//                        currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
+//                        currentLoggedInUser.setLastName(loggedInUserLastName.getText().toString().trim());
+//                        currentLoggedInUser.setUserEmail(loggedInUserEmail.getText().toString().trim());
+//                        currentLoggedInUser.setUserAge(Integer.parseInt(loggedInUserAge.getText().toString().trim()));
+//                        currentLoggedInUser.setUserGender(loggedInUserGender.getText().toString().trim());
+//                        currentLoggedInUser.setUserInterestedIn(loggedInUserInterestedIn.getText().toString().trim());
+//                        currentLoggedInUser.setUserPhoneNumber(loggedInUserPhoneNumber.getText().toString().trim());
+                    }
+                });
 
                 loggedInUserRecyclerView = findViewById(R.id.loggedIn_user_recycle_view_container);
                 loggedInUserRecyclerView.setHasFixedSize(true);
@@ -214,8 +244,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 getPhotosId(loggedInUserResponse, currentUserEmail);
 
-                loggedInUserFullName.setText(currentLoggedInUser.getFirstName() + " " + currentLoggedInUser.getLastName());
-                loggedInUserAge.setText(String.valueOf(currentLoggedInUser.getUserAge()));
+                setLoggedInInfo();
+
+
+
                 GlideUrl glideUrl = new GlideUrl(Constants.PHOTOS_URL, new LazyHeaders.Builder()
                         .addHeader("action", "getProfilePhoto")
                         .addHeader("userId", String.valueOf(Preferences.getUserId(getApplicationContext())))
@@ -233,6 +265,55 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void applyChanges() {
+        IAsyncResponse updateInfoResponse = new IAsyncResponse() {
+            @Override
+            public <T> void processFinished(T response) {
+                Log.d("updatingUser", "processFinished: "+response);
+
+                try {
+                    JSONObject res = new JSONObject(response.toString());
+                    if(!res.has("Success")){
+
+                    }
+                    else{
+                        currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
+//                currentLoggedInUser.setFirstName(loggedInUserFirstName.getText().toString().trim());
+//                currentLoggedInUser.setLastName(loggedInUserLastName.getText().toString().trim());
+//                currentLoggedInUser.setUserEmail(loggedInUserEmail.getText().toString().trim());
+//                currentLoggedInUser.setUserAge(Integer.parseInt(loggedInUserAge.getText().toString().trim()));
+//                currentLoggedInUser.setUserGender(loggedInUserGender.getText().toString().trim());
+//                currentLoggedInUser.setUserInterestedIn(loggedInUserInterestedIn.getText().toString().trim());
+//                currentLoggedInUser.setUserPhoneNumber(loggedInUserPhoneNumber.getText().toString().trim());
+            }
+        };
+
+        Authentication.setCurrentUserInfo(this,Preferences.getUserId(this),loggedInUserEmail.getText().toString().trim(),loggedInUserFirstName.getText().toString().trim(),loggedInUserLastName.getText().toString().trim(),
+                loggedInUserPhoneNumber.getText().toString().trim(),loggedInUserAge.getText().toString().trim(),loggedInUserGender.getText().toString().trim(),
+                loggedInUserInterestedIn.getText().toString().trim(),updateInfoResponse);
+
+
+    }
+
+    private void setLoggedInInfo() {
+
+
+        loggedInUserEmail.setText(currentLoggedInUser.getUserEmail());
+        loggedInUserFirstName.setText(currentLoggedInUser.getFirstName());
+        loggedInUserLastName.setText(currentLoggedInUser.getLastName());
+        loggedInUserPhoneNumber.setText(currentLoggedInUser.getUserPhoneNumber());
+        loggedInUserAge.setText(String.valueOf(currentLoggedInUser.getUserAge()));
+        loggedInUserGender.setText(currentLoggedInUser.getUserGender());
+        loggedInUserInterestedIn.setText(currentLoggedInUser.getUserInterestedIn());
     }
 
     private void openWhatsApp() {

@@ -11,6 +11,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Utils.Constants;
 import com.example.thearena.Utils.Encryption;
+import com.example.thearena.Utils.Preferences;
 
 import org.json.JSONObject;
 
@@ -88,6 +89,21 @@ public class Authentication {
         requestManager(context, Constants.USERINFO_URL, Request.Method.GET, iAsyncResponse, map);
     }
 
+    public static void setCurrentUserInfo(final Context context,final String userId, final String email,final String firstName,final String lastName,final String phoneNumber,final String age,final String gender,
+                                          final String interestedIn, final IAsyncResponse iAsyncResponse) {
+        map.clear();
+           // map.put("email", email);
+            map.put("userId",userId);
+            map.put("firstName", firstName);
+            map.put("lastName", lastName);
+            map.put("phoneNumber", phoneNumber);
+            map.put("age", age);
+            map.put("gender", gender);
+            map.put("interestedIn", interestedIn);
+            requestManager(context, Constants.USERINFO_URL, Request.Method.POST, iAsyncResponse, map);
+
+    }
+
 
     public static void requestManager(final Context context, final String uri, final Integer method, final IAsyncResponse callback, final HashMap<String, Object> paramsToBody) {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
@@ -147,6 +163,19 @@ public class Authentication {
                                     body.put("email", paramsToBody.get("email"));
                                     break;
                             }
+                            return body.toString().getBytes();
+                        }
+                        else if(uri.equals(Constants.USERINFO_URL))
+                        {
+                            body.put("userId", paramsToBody.get("userId"));
+                            body.put("firstName", paramsToBody.get("firstName"));
+                            body.put("lastName", paramsToBody.get("lastName"));
+                            body.put("phoneNumber", paramsToBody.get("phoneNumber"));
+                            body.put("age", paramsToBody.get("age"));
+                            body.put("gender", paramsToBody.get("gender"));
+                            body.put("interestedIn", paramsToBody.get("interestedIn"));
+                           // body.put("email", paramsToBody.get("email"));
+
                             return body.toString().getBytes();
                         }
                     } catch (Exception e) {
