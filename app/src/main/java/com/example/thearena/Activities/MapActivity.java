@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -20,8 +21,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -41,6 +44,7 @@ import com.example.thearena.Classes.NetworkClient;
 import com.example.thearena.Classes.Registration;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
+import com.example.thearena.Fragments.ImageUploadFragment;
 import com.example.thearena.Fragments.LoginPage;
 import com.example.thearena.Fragments.RegisterFragment;
 import com.example.thearena.Interfaces.IAsyncResponse;
@@ -71,6 +75,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -79,6 +84,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import static com.example.thearena.Utils.Constants.GALLERY_PERMISSION__REQUEST_CODE;
+import static java.security.AccessController.getContext;
 
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleMap.OnMarkerClickListener, NavigationView.OnNavigationItemSelectedListener {
@@ -131,6 +139,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private RecyclerView.LayoutManager layoutManager;
 
     private Button logOutBtn;
+    private Button uploadImageBtn;
+    private Button uploadGalleryImage;
+    private CardView cardView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,11 +227,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 });
 
+                uploadImageBtn = findViewById(R.id.map_upload_photo_btn);
+                uploadImageBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        uploadImage(Constants.PROFILE_GALLERY_PERMISSION__REQUEST_CODE);
+                        drawerLayout.closeDrawers();
+                    }
+                });
+
+                uploadGalleryImage = findViewById(R.id.map_upload_gallery_photo_btn);
+                uploadGalleryImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        uploadImage(GALLERY_PERMISSION__REQUEST_CODE);
+                        drawerLayout.closeDrawers();
+                    }
+                });
 
                 loggedInUserRecyclerView = findViewById(R.id.loggedIn_user_recycle_view_container);
                 loggedInUserRecyclerView.setHasFixedSize(true);
                 loggedInlayoutManager = new LinearLayoutManager(MapActivity.this);
                 loggedInUserRecyclerView.setLayoutManager(loggedInlayoutManager);
+
                 loggedInUserResponse = new IAsyncResponse() {
                     @Override
                     public <T> void processFinished(T response) {
@@ -235,6 +264,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             loggedInRecyclerViewImageAdapter = new LoggedInRecyclerViewImageAdapter(MapActivity.this, listdata);
                             loggedInUserRecyclerView.setAdapter(loggedInRecyclerViewImageAdapter);
                             loggedInRecyclerViewImageAdapter.notifyDataSetChanged();
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -264,6 +294,32 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+
+    private void uploadImage(int code) {
+        Intent intent = new Intent();
+        intent.setType("image/*");                      //allow to select any kind of images
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Pick an image"), code);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Uri selectedFileURI = data.getData();
+        String fullPath = ImageUploadFragment.getPath(this, selectedFileURI);
+        assert fullPath != null;
+        file = new File(fullPath);
+        if (requestCode == GALLERY_PERMISSION__REQUEST_CODE) {
+            //Update profile image
+            sendImageToServer();
+        }
+        else{
+            //Add regular image
+            sendRegImageToServer();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void logOutUser() {
@@ -520,7 +576,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             googleMap.setOnMarkerClickListener(this);
             googleMap.setOnMapClickListener(latLng -> selectedUserNavigationView.setVisibility(View.GONE));
-            Log.d("plkjh", "processFinished: "+currentUserEmail);
             new Thread(() -> Authentication.sendLocation(MapActivity.this, currentUserEmail, lastCurrentLocation, null)).start();
         } else
             getLocationPermission();
@@ -584,8 +639,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case R.id.upload_image:
                 break;
             case R.id.upload_profile_image:
-//                ImageUploadFragment imageUploadFragment = new ImageUploadFragment();
-//                imageUploadFragment.selectImageFromGallery();
                 break;
         }
         return true;
@@ -657,6 +710,51 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
             //  }
         }).start();
+    }
+
+    public void sendImageToServer() {
+        if (file != null) {
+            Retrofit retrofit = NetworkClient.getRetrofit();
+            UploadApis uploadApis = retrofit.create(UploadApis.class);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("newPhoto", file.getName(), requestFile);
+            RequestBody userId = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getUserId(Objects.requireNonNull(MapActivity.this)));
+            Call call = uploadApis.uploadImage(body, userId);
+            call.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                   // Toast.makeText(MapActivity.this, "Your profile picture updated successfully", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                    //Toast.makeText(MapActivity.this, "Oops something went wrong..", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+    }
+    public void sendRegImageToServer() {
+        if (file != null) {
+            Retrofit retrofit = NetworkClient.getRetrofit();
+            UploadApis uploadApis = retrofit.create(UploadApis.class);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("newPhoto", file.getName(), requestFile);
+            RequestBody userEmail = RequestBody.create(MediaType.parse("multipart/form-data"), Preferences.getMail(Objects.requireNonNull(MapActivity.this)));
+            Call call = uploadApis.postRequestImage(body,userEmail);
+            call.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    //Toast.makeText(MapActivity.this, "Your profile picture updated successfully", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                   //Toast.makeText(MapActivity.this, "Oops something went wrong..", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
     }
 
 }

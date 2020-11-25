@@ -228,8 +228,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
     }
 
     public void sendImageToServer() {
-        if (file.exists()) {
-            //new Thread(() -> addImageToDb()).start();
+        if (file != null) {
             Retrofit retrofit = NetworkClient.getRetrofit();
             UploadApis uploadApis = retrofit.create(UploadApis.class);
             RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -247,8 +246,7 @@ public class ImageUploadFragment extends Fragment implements View.OnClickListene
                     Toast.makeText(getContext(), "Oops something went wrong..", Toast.LENGTH_LONG).show();
                 }
             });
-        } else
-            Snackbar.make(Objects.requireNonNull(getView()), "Make sure to upload a picture later", Snackbar.LENGTH_LONG).show();
+        }
 
     }
 

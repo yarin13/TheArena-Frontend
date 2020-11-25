@@ -29,11 +29,26 @@
                 android:layout_weight="0.9"
                 android:layout_gravity="center"
                 android:text="Apply" />
+
+            <Button
+                android:id="@+id/map_upload_photo_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Upload Image"/>
+            <Button
+                android:id="@+id/map_upload_gallery_photo_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Change Profile"/>
+
             <Button
                 android:id="@+id/map_log_out_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Log Out"/>
+
+
+
 
 </LinearLayout>
 
