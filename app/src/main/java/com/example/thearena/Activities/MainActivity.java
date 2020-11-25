@@ -25,6 +25,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null){
+            this.mainFragmentManager(new LoginPage());
+        }
+
         if (findViewById(R.id.fragment_container) != null) {
 
             // However, if we're being restored from a previous state,
@@ -52,4 +57,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MapActivity.class);
         startActivity(intent);
     }
+
+
 }

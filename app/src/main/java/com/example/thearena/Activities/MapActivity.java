@@ -42,6 +42,7 @@ import com.example.thearena.Classes.Registration;
 import com.example.thearena.Classes.User;
 import com.example.thearena.Data.InnerDatabaseHandler;
 import com.example.thearena.Fragments.LoginPage;
+import com.example.thearena.Fragments.RegisterFragment;
 import com.example.thearena.Interfaces.IAsyncResponse;
 import com.example.thearena.Interfaces.UploadApis;
 import com.example.thearena.R;
@@ -129,6 +130,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private RecyclerViewImageAdapter recyclerViewImageAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
+    private Button logOutBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,6 +184,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         //Get LoggedIn user Info:
         Authentication.getCurrentUserInfo(this, Preferences.getUserId(this), currentLoggedInResponse);
 
+
     }
 
     private void setActionBarsDrawable() {
@@ -196,7 +199,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 loggedInUserLastName = findViewById(R.id.loggedInUserLastName);
                 loggedInUserPhoneNumber = findViewById(R.id.loggedInUserPhoneNumber);
                 loggedInApplyBtn = findViewById(R.id.loggedInApplyButton);
-
                 loggedInApplyBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -205,6 +207,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     }
                 });
+
+                logOutBtn = findViewById(R.id.map_log_out_btn);
+                logOutBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        logOutUser();
+                    }
+                });
+
 
                 loggedInUserRecyclerView = findViewById(R.id.loggedIn_user_recycle_view_container);
                 loggedInUserRecyclerView.setHasFixedSize(true);
@@ -253,6 +264,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void logOutUser() {
+        map.clear();
+        isLoggedIn = false;
+        Authentication.logoff(this, currentUserEmail);
+        Preferences.deleteAllPref(this);
+        innerDatabaseHandler.dropTables();
+
+        Intent intent = new Intent(this,MainActivity.class);
+        intent.putExtra("Action","LogOut");
+        startActivity(intent);
     }
 
     private void applyChanges() {
