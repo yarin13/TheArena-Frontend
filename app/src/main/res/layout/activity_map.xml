@@ -23,8 +23,9 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/mapFloatingButton"
-            android:layout_width="62dp"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:fabSize="auto"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
@@ -35,17 +36,17 @@
             app:pressedTranslationZ="0dp" />
 
 
-            <com.google.android.material.bottomnavigation.BottomNavigationView
-                android:id="@+id/navigation"
-                android:layout_alignBottom="@id/MapId"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_gravity="bottom"
-                android:background="@color/white"
-                app:itemTextColor="@color/darker_gray"
-                app:menu="@menu/menu_xml"
-                app:layout_behavior="BottomNavigationBehavior"
-                app:itemIconTint="@drawable/selector_navigation" />
+<!--            <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--                android:id="@+id/navigation"-->
+<!--                android:layout_alignBottom="@id/MapId"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="60dp"-->
+<!--                android:layout_gravity="bottom"-->
+<!--                android:background="@color/white"-->
+<!--                app:itemTextColor="@color/darker_gray"-->
+<!--                app:menu="@menu/menu_xml"-->
+<!--                app:layout_behavior="BottomNavigationBehavior"-->
+<!--                app:itemIconTint="@drawable/selector_navigation" />-->
 
 
 
